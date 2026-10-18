@@ -90,7 +90,7 @@
   
   <!-- TELA INICIAL -->
   <div id="screen-home" class="screen active card home-hero">
-    <h1 class="title" style="font-size:1.8rem;">RH na Real</h1>
+    <h1 class="title" style="font-size:1.8rem;">RH na Vida Real</h1>
     <p class="subtitle" style="font-size:1rem;">O Jogo de Tabuleiro Humano / RPG de Gestão (UFAM)</p>
     <div class="home-btns">
       <button class="btn btn-lg" onclick="tentarEntrarMestre()">Entrada do Mestre / Banca RH</button>
@@ -159,14 +159,14 @@
 
     <!-- TAB 2: DECISÕES E ALERTAS DE CONSULTORIA -->
     <div id="mestre-decisoes" class="mestre-tab-content" style="display:none;">
-      <!-- ALERTA DE CONSULTORIA COM BLOQUEIO INDIVIDUAL POR CONSULTA -->
+      <!-- ALERTA DE CONSULTORIA -->
       <div id="alerta-consultoria-mestre" style="display:none;" class="box-alerta-consultoria">
-        <h3 class="title" style="font-size:1.05rem; color:var(--danger); margin-bottom:8px;">🚨 Consultorias Solicitadas (Bloqueie individualmente cada pedido)</h3>
+        <h3 class="title" style="font-size:1.05rem; color:var(--danger); margin-bottom:8px;">🚨 Consultorias Solicitadas</h3>
         <div id="lista-alertas-consultoria" style="font-size:0.9rem;"></div>
       </div>
 
       <div class="card">
-        <h3 class="title" style="font-size:1.1rem;">Decisões &amp; Avaliação Automática em Tempo Real</h3>
+        <h3 class="title" style="font-size:1.1rem;">Decisões &amp; Avaliação em Tempo Real</h3>
         <p class="subtitle">Análise do Gabarito Pedagógico.</p>
         <div id="container-mestre-decisoes-detalhadas"></div>
       </div>
@@ -212,38 +212,27 @@
             </select>
           </div>
           <div class="timer" id="display-master-timer">10:00</div>
-          <div class="btn-group" style="justify-content:center; margin-bottom:10px;">
+          <div class="btn-group" style="justify-content:center;">
             <button class="btn" onclick="startMasterTimer()">Iniciar</button>
             <button class="btn btn-sec" onclick="pauseMasterTimer()">Pausar</button>
-            <button class="btn btn-sec" onclick="resetMasterTimer()">Resetar</button>
+            <button class="btn btn-danger" onclick="resetMasterTimer()">🛑 Encerrar &amp; Travar Envios</button>
           </div>
-          <button class="btn btn-danger" style="width:100%; margin-top:6px;" onclick="forçarEncerramentoDeliberacao()">🛑 Encerrar Deliberação Imediatamente &amp; Travar Envios</button>
         </div>
 
-        <!-- CRONÔMETRO INDIVIDUAL DE RESPOSTA / PITCH POR EQUIPE -->
+        <!-- CRONÔMETRO DE PITCH (PADRÃO 5 MINUTOS FIXOS) -->
         <div class="card">
-          <h3 class="title" style="font-size:1.1rem;">⏱️ Cronômetro de Resposta / Pitch por Equipe</h3>
-          <p class="subtitle">Controle o tempo de apresentação ou defesa individual de cada grupo.</p>
+          <h3 class="title" style="font-size:1.1rem;">⏱️ Cronômetro de Pitch</h3>
+          <p class="subtitle">O tempo gasto é impacta na nota de ajuste do pitch.</p>
           
           <div class="form-group">
             <label for="select-grupo-timer-individual">Selecione a Equipe:</label>
             <select id="select-grupo-timer-individual" onchange="mudarGrupoPitch()"></select>
           </div>
 
-          <div class="form-group">
-            <label for="duracao-pitch-input">Tempo Limite da Fase:</label>
-            <select id="duracao-pitch-input" onchange="resetGroupTimerDuration()">
-              <option value="180">3 minutos (Padrão Pitch)</option>
-              <option value="120">2 minutos</option>
-              <option value="300">5 minutos</option>
-              <option value="60">1 minuto</option>
-            </select>
-          </div>
-
-          <div class="timer" id="display-group-timer" style="color: var(--success);">03:00</div>
+          <div class="timer" id="display-group-timer" style="color: var(--success);">05:00</div>
           
           <div class="btn-group" style="justify-content:center;">
-            <button class="btn" style="background:var(--success);" onclick="startGroupTimer()">Iniciar Relógio</button>
+            <button class="btn" style="background:var(--success);" onclick="startGroupTimer()">Iniciar Pitch</button>
             <button class="btn btn-sec" onclick="pausarEfetuarRegistroPitch()">Pausar &amp; Salvar Tempo</button>
             <button class="btn btn-sec" onclick="resetGroupTimer()">Resetar</button>
           </div>
@@ -256,19 +245,29 @@
     <div id="mestre-ranking" class="mestre-tab-content" style="display:none;">
       <div class="grid">
         <div class="card">
-          <h3 class="title" style="font-size:1.1rem;">Ajuste de Nota do Pitch (0-20 pts)</h3>
+          <h3 class="title" style="font-size:1.1rem;">Nota do Pitch</h3>
+          <p class="subtitle">Calculado com base na agilidade (tempo de pitch) e qualidade da resposta (avaliação do Mestre).</p>
+          
           <div class="form-group">
             <label for="select-grupo-eval">Equipe:</label>
             <select id="select-grupo-eval" onchange="carregarPontuacaoGrupo()"></select>
           </div>
+
           <div class="form-group">
-            <label>Nota da Apresentação / Pitch (Até 20 pts):</label>
-            <input type="number" id="pilar-pitch" min="0" max="20" value="15" oninput="calcMediaRanking()">
+            <label>Qualidade do Pitch avaliada pela Banca:</label>
+            <input type="number" id="pilar-pitch-qualidade" min="0" max="20" value="15" oninput="calcMediaRanking()">
           </div>
-          <p style="font-size:0.85rem; color:var(--text-secondary);">Fundamentação Técnica e Viabilidade calculadas automaticamente pela escolha estruturada.</p>
-          <p style="text-align:center; font-weight:700; margin:10px 0;">Total Automático: <span id="display-nota-final" style="color:var(--brand);">0</span> / 100 pts</p>
-          <button class="btn" style="width:100%;" onclick="salvarPontuacaoGrupo()">Salvar Ajuste do Pitch</button>
+
+          <div style="background:#f8fafc; padding:10px; border-radius:8px; border:1px solid var(--border); font-size:0.85rem; margin-bottom:12px;">
+            <p><strong>Tempo gasto no pitch:</strong> <span id="info-tempo-pitch-calc" style="color:var(--brand);">Não registrado</span></p>
+            <p><strong>Bônus de Velocidade:</strong> <span id="info-bonus-velocidade">0 pts</span></p>
+            <p style="margin-top:4px; font-weight:700; color:var(--success);">Nota Final Calculada do Pitch: <span id="display-nota-pitch-final">15</span> / 20 pts</p>
+          </div>
+
+          <p style="text-align:center; font-weight:700; margin:10px 0;">Total Automático Geral: <span id="display-nota-final" style="color:var(--brand);">0</span> / 100 pts</p>
+          <button class="btn" style="width:100%;" onclick="salvarPontuacaoGrupo()">Salvar Nota do Pitch</button>
         </div>
+
         <div class="card">
           <h3 class="title" style="font-size:1.1rem;">Placar Geral Automático</h3>
           <table>
@@ -284,10 +283,10 @@
         </div>
       </div>
 
-      <!-- ANÁLISE DE TENDÊNCIAS / HISTÓRICO DE RODADAS COM TEMPOS DE PITCH POR EQUIPE -->
+      <!-- ANÁLISE DE TENDÊNCIAS / HISTÓRICO DE RODADAS -->
       <div class="card" style="margin-top: 16px;">
         <h3 class="title" style="font-size:1.1rem;">📈 Análise de Tendências, Cartas &amp; Tempos de Pitch</h3>
-        <p class="subtitle">Acompanhe a evolução de pontuações, cartas de crise e o tempo de apresentação gasto por cada equipe.</p>
+        <p class="subtitle">Evolução de pontuações, cartas de crise e o tempo de apresentação.</p>
         <div id="container-historico-tendencias" style="overflow-x: auto;">
           <p class="subtitle">Nenhuma rodada salva no histórico ainda.</p>
         </div>
@@ -327,7 +326,7 @@
           </div>
 
           <div class="card">
-            <h3 class="title" style="font-size:1.1rem;">Consultoria Técnica (-5 pts cada)</h3>
+            <h3 class="title" style="font-size:1.1rem;">Consultoria Técnica (-5 pts)</h3>
             <p class="subtitle">Especialistas disponíveis para este cenário:</p>
             <div id="container-consultores-grupo" class="btn-group"></div>
             <div id="historico-consultas-grupo" style="margin-top:10px; font-size:0.8rem;"></div>
@@ -349,7 +348,7 @@
           </div>
 
           <div class="form-group">
-            <label for="decisao-justificativa-pitch">Síntese do Argumento para o Pitch (3 min):</label>
+            <label for="decisao-justificativa-pitch">Síntese do Argumento para o Pitch (5 min):</label>
             <textarea id="decisao-justificativa-pitch" rows="3" placeholder="Resuma em poucas palavras a lógica da sua equipe..."></textarea>
           </div>
 
@@ -358,11 +357,11 @@
       </div>
     </div>
 
-    <!-- ABA DE HISTÓRICO DURÁVEL DA EQUIPE -->
+    <!-- ABA DE HISTÓRICO DURÁVEL DA EQUIPE (COM BOTÃO DE APAGAR INDIVIDUAL) -->
     <div id="grupo-tab-content-historico" class="grupo-tab-pane" style="display:none;">
       <div class="card">
         <h3 class="title" style="font-size:1.1rem;">📜 Histórico de Decisões &amp; Resumo para o Pitch</h3>
-        <p class="subtitle">Consulte aqui as decisões estratégicas que sua equipe submeteu. Este registro permanece guardado para apoio nas apresentações (Pitches).</p>
+        <p class="subtitle">Consulte aqui as decisões estratégicas que sua equipe submeteu. Este registro permanece guardado para apoio nas apresentações (Pitches), podendo ser apagado individualmente se necessário.</p>
         <div id="container-historico-pessoal-grupo">
           <p class="subtitle">Nenhuma decisão submetida ou registrada ainda.</p>
         </div>
@@ -498,7 +497,7 @@
       ],
       opts2: [
         { texto: 'Comunicação transparente com boletins informativos e diálogo constante com líderes.', ptsFund: 40, ptsViab: 30, ideal: true },
-        { texto: 'Manter sigilo absoluto e proibir conversas sobre a greve.', ptsFund: 5, ptsViab: 5, ideal: false }
+        { texto: 'Manter sigilo absoluto e proibir conversas sobre a greve.', ptsFund: 5, ptsViab: 0, ideal: false }
       ]
     },
     {
@@ -532,7 +531,7 @@
     crises: {},
     decisoes: {},
     historicoDecisoesGrupos: {},
-    temposPitchEquipes: {}, // Armazena o tempo gasto por cada equipe no pitch da rodada atual
+    temposPitchEquipes: {}, 
     mensagens: [],
     pontuacoes: {},
     consultas: {},
@@ -613,8 +612,6 @@
     const container = document.getElementById('container-inputs-grupos');
     if (!container) return;
     const num = parseInt(numEl.value);
-    
-    // Atualiza o select do número de grupos para refletir a quantidade real
     numEl.value = appState.grupos.length;
 
     container.innerHTML = '';
@@ -761,7 +758,7 @@
       appState.grupos.forEach(g => {
         const pts = h.placar[g]?.total || 0;
         const cartaUsada = h.cartasRodada?.[g] || 'N/A';
-        const tempoGasto = h.temposPitch?.[g] ? formatarTempoMMSS(h.temposPitch[g]) : 'Não cronometrado';
+        const tempoGasto = h.temposPitch?.[g] !== undefined ? formatarTempoMMSS(h.temposPitch[g]) : 'Não cronometrado';
         html += `<td><strong>${pts} pts</strong><br><small style="color:var(--text-secondary);">📄 ${cartaUsada}</small><br><span class="badge badge-warning">⏱️ Pitch: ${tempoGasto}</span></td>`;
       });
       html += `</tr>`;
@@ -944,6 +941,7 @@
     }
   }
 
+  // Renderiza o Histórico do Grupo com Botão de Apagar Individual
   function renderHistoricoPessoalGrupo() {
     const g = appState.grupoAtivo;
     const container = document.getElementById('container-historico-pessoal-grupo');
@@ -959,9 +957,12 @@
     historicoGrupo.forEach((h, idx) => {
       html += `
         <div style="background:#f8fafc; border:1px solid var(--border); border-left:4px solid var(--brand); padding:12px; border-radius:8px; margin-bottom:12px; font-size:0.85rem;">
-          <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
             <strong style="color:var(--brand);">📄 ${h.cartaTitulo}</strong>
-            <span class="badge badge-success">${h.hora}</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="badge badge-success">${h.hora}</span>
+              <button class="btn-danger" style="padding:2px 8px; font-size:0.75rem;" onclick="apagarItemHistoricoGrupo(${idx})">🗑️ Apagar</button>
+            </div>
           </div>
           <p style="margin-bottom:4px;"><strong>1. Decisão Tática:</strong> ${h.q1Texto}</p>
           <p style="margin-bottom:4px;"><strong>2. Reformulação Estrutural:</strong> ${h.q2Texto}</p>
@@ -970,6 +971,16 @@
     });
     container.innerHTML = html;
   }
+
+  window.apagarItemHistoricoGrupo = function(idx) {
+    const g = appState.grupoAtivo;
+    if (!g || !appState.historicoDecisoesGrupos || !appState.historicoDecisoesGrupos[g]) return;
+    if (confirm("Deseja realmente apagar este registro do seu histórico?")) {
+      appState.historicoDecisoesGrupos[g].splice(idx, 1);
+      guardarEstado();
+      renderHistoricoPessoalGrupo();
+    }
+  };
 
   window.registrarConsultoria = function(esp) {
     const g = appState.grupoAtivo;
@@ -1218,33 +1229,24 @@
   };
 
   window.pauseMasterTimer = function() { clearInterval(timerMaster); timerMaster = null; };
-  window.resetMasterTimer = function() { window.pauseMasterTimer(); window.setMasterTimerStage(); };
-
-  window.forçarEncerramentoDeliberacao = function() {
-    if (confirm("Deseja encerrar o tempo de deliberação agora mesmo? O envio das decisões será travado para todas as equipes.")) {
+  
+  window.resetMasterTimer = function() {
+    if (confirm("Deseja encerrar e resetar o tempo geral? Isso vai zerar o relógio e travar o envio de novas decisões para todas as equipes.")) {
       window.pauseMasterTimer();
       appState.tempoEsgotadoGlobal = true;
       guardarEstado();
       masterTime = 0;
       updateTimerDisplay();
-      alert("Prazo encerrado pelo Mestre! Envios travados.");
+      alert("Prazo encerrado e envios travados pelo Mestre!");
       atualizarInterface();
     }
   };
 
-  // TIMER INDIVIDUAL DE RESPOSTA / PITCH POR EQUIPE (COM SALVAMENTO AUTOMÁTICO AO PAUSAR/MUDAR)
+  // TIMER INDIVIDUAL DE PITCH FIXADO EM 5 MINUTOS (300 SEGUNDOS)
   let timerGroup = null;
-  let duracaoInicialMax = 180; // Padrão 3 min
+  const DURACAO_MAX_PITCH = 300; 
   let segundosGastosAtual = 0;
   let grupoSelecionadoAnterior = '';
-
-  window.resetGroupTimerDuration = function() {
-    duracaoInicialMax = parseInt(document.getElementById('duracao-pitch-input').value);
-    window.pauseGroupTimer();
-    segundosGastosAtual = 0;
-    updateGroupTimerDisplay();
-    atualizarStatusTextoGrupo();
-  };
 
   function formatarTempoMMSS(segundosTotais) {
     const m = Math.floor(segundosTotais / 60);
@@ -1253,7 +1255,7 @@
   }
 
   function updateGroupTimerDisplay() {
-    const tempoRestante = Math.max(0, duracaoInicialMax - segundosGastosAtual);
+    const tempoRestante = Math.max(0, DURACAO_MAX_PITCH - segundosGastosAtual);
     const el = document.getElementById('display-group-timer');
     if (el) el.innerText = formatarTempoMMSS(tempoRestante);
   }
@@ -1273,7 +1275,6 @@
 
   window.mudarGrupoPitch = function() {
     const grupoNovo = document.getElementById('select-grupo-timer-individual').value;
-    // Se mudou de equipe e havia contagem, salva a anterior antes de resetar para a nova
     if (timerGroup) {
       clearInterval(timerGroup);
       timerGroup = null;
@@ -1287,7 +1288,6 @@
     }
     grupoSelecionadoAnterior = grupoNovo;
     segundosGastosAtual = 0;
-    duracaoInicialMax = parseInt(document.getElementById('duracao-pitch-input').value);
     updateGroupTimerDisplay();
     atualizarStatusTextoGrupo();
   };
@@ -1297,13 +1297,13 @@
     grupoSelecionadoAnterior = grupoSel;
     if (!timerGroup) {
       timerGroup = setInterval(() => {
-        if (segundosGastosAtual < duracaoInicialMax) {
+        if (segundosGastosAtual < DURACAO_MAX_PITCH) {
           segundosGastosAtual++;
           updateGroupTimerDisplay();
         } else {
           clearInterval(timerGroup);
           timerGroup = null;
-          alert(`⏰ O tempo limite de apresentação/pitch da ${grupoSel} esgotou!`);
+          alert(`⏰ O tempo limite de 5 minutos do pitch da ${grupoSel} esgotou!`);
         }
       }, 1000);
     }
@@ -1320,7 +1320,7 @@
       appState.temposPitchEquipes[grupoSel] = segundosGastosAtual;
       guardarEstado();
       atualizarStatusTextoGrupo();
-      alert(`⏱️ Tempo de ${formatarTempoMMSS(segundosGastosAtual)} da ${grupoSel} guardado com sucesso no histórico da rodada!`);
+      alert(`⏱️ Tempo de ${formatarTempoMMSS(segundosGastosAtual)} da ${grupoSel} guardado com sucesso!`);
     }
   };
 
@@ -1333,21 +1333,53 @@
     updateGroupTimerDisplay();
   };
 
-  // RANKING
+  // RANKING E CÁLCULO INTELIGENTE DO PITCH
   window.carregarPontuacaoGrupo = function() {
     const g = document.getElementById('select-grupo-eval').value;
     const p = (appState.pontuacoes && appState.pontuacoes[g]) || { fund: 0, viab: 0, pitch: 15, saldo: 10, total: 25 };
-    document.getElementById('pilar-pitch').value = p.pitch;
+    document.getElementById('pilar-pitch-qualidade').value = p.pitch;
     window.calcMediaRanking();
   };
 
   window.calcMediaRanking = function() {
     const g = document.getElementById('select-grupo-eval').value;
     const p = (appState.pontuacoes && appState.pontuacoes[g]) || { fund: 0, viab: 0, saldo: 10 };
-    const pitch = parseFloat(document.getElementById('pilar-pitch').value) || 0;
-    const total = p.fund + p.viab + p.saldo + pitch;
-    document.getElementById('display-nota-final').innerText = total;
-    return { pitch, total };
+    
+    const qualidadeBanca = parseFloat(document.getElementById('pilar-pitch-qualidade').value) || 0;
+    const tempoGastoSegundos = (appState.temposPitchEquipes && appState.temposPitchEquipes[g] !== undefined) 
+      ? appState.temposPitchEquipes[g] 
+      : 0;
+
+    const infoTempoEl = document.getElementById('info-tempo-pitch-calc');
+    const infoBonusEl = document.getElementById('info-bonus-velocidade');
+    const displayPitchFinalEl = document.getElementById('display-nota-pitch-final');
+
+    if (infoTempoEl) {
+      infoTempoEl.innerText = appState.temposPitchEquipes?.[g] !== undefined ? formatarTempoMMSS(tempoGastoSegundos) : 'Não cronometrado';
+    }
+
+    let bonusVelocidade = 0;
+    if (tempoGastoSegundos > 0 && tempoGastoSegundos <= 180) {
+      bonusVelocidade = 2; 
+    } else if (tempoGastoSegundos > 180 && tempoGastoSegundos <= 270) {
+      bonusVelocidade = 1; 
+    } else {
+      bonusVelocidade = 0; 
+    }
+
+    let notaPitchFinal = qualidadeBanca + bonusVelocidade;
+    if (qualidadeBanca >= 18 && notaPitchFinal > 20) {
+      notaPitchFinal = 20; 
+    } else if (notaPitchFinal > 20) {
+      notaPitchFinal = 20;
+    }
+
+    if (infoBonusEl) infoBonusEl.innerText = `+${bonusVelocidade} pts (por agilidade)`;
+    if (displayPitchFinalEl) displayPitchFinalEl.innerText = notaPitchFinal;
+
+    const totalGeral = p.fund + p.viab + p.saldo + notaPitchFinal;
+    document.getElementById('display-nota-final').innerText = totalGeral;
+    return { pitchFinal: notaPitchFinal, total: totalGeral };
   };
 
   window.salvarPontuacaoGrupo = function() {
@@ -1355,10 +1387,10 @@
     const res = window.calcMediaRanking();
     if (!appState.pontuacoes) appState.pontuacoes = {};
     const atual = appState.pontuacoes[g] || { fund: 0, viab: 0, saldo: 10 };
-    appState.pontuacoes[g] = { ...atual, pitch: res.pitch, total: res.total };
+    appState.pontuacoes[g] = { ...atual, pitch: res.pitchFinal, total: res.total };
     guardarEstado();
     renderRanking();
-    alert(`Nota ajustada para ${g}! Total: ${res.total} pts`);
+    alert(`Nota do Pitch ajustada para ${g}! Total Geral: ${res.total} pts`);
   };
 
   function renderRanking() {
