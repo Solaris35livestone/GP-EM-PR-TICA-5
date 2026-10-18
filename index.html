@@ -457,7 +457,7 @@
       ],
       opts2: [
         { texto: 'Comunicação transparente com boletins informativos e diálogo constante com líderes.', ptsFund: 40, ptsViab: 30, ideal: true },
-        { texto: 'Manter sigilo absoluto e proibir conversas sobre a greve.', ptsFund: 5, ptsViab: 5, ideal: false }
+        { texto: 'Manter sigilo absoluto e proibir conversas sobre a greve.', ptsFund: 5, ptsViab: 0, ideal: false }
       ]
     },
     {
@@ -603,15 +603,16 @@
     }
   };
 
+  // Limpa o histórico de cartas sorteadas e também remove visualmente das telas das equipes e do mestre
   window.limparHistoricoCartasApenas = function() {
-    if (confirm("Deseja apagar apenas o registo de cartas sorteadas pelas equipes? (Isso permitirá que as equipes possam receber novamente cartas que já haviam jogado anteriormente, mantendo intactos os placares e o histórico de rodadas).")) {
+    if (confirm("Deseja apagar o registo de cartas sorteadas e limpar as crises ativas das equipes? (Isso resetará as cartas ativas e o histórico de baralho, mantendo placares intactos).")) {
       appState.cartasSorteadasPorGrupo = {};
+      appState.crises = {}; // Limpa as crises ativas para sumirem visualmente
       guardarEstado();
-      alert("Histórico de cartas limpo com sucesso! As equipes agora podem receber qualquer carta do baralho novamente.");
+      alert("Histórico e cartas ativas limpos com sucesso! As equipes agora estão sem cartas até um novo sorteio.");
     }
   };
 
-  // Função para alternar a trava diretamente pelo botão na notificação
   window.toggleTravaConsultoria = function() {
     appState.travaConsultoria = !appState.travaConsultoria;
     guardarEstado();
@@ -712,11 +713,15 @@
     const el = document.getElementById('resultado-sorteio-mestre');
     if (!el) return;
     let html = '';
+    let temCrise = false;
     appState.grupos.forEach(g => {
       const c = appState.crises[g];
-      if (c) html += `<div style="padding:6px; background:#fff; border:1px solid #e2e8f0; margin-bottom:4px; font-size:0.85rem;"><strong>${g}:</strong> ${c.emoji || '📌'} ${c.titulo}</div>`;
+      if (c && c.titulo) {
+        temCrise = true;
+        html += `<div style="padding:6px; background:#fff; border:1px solid #e2e8f0; margin-bottom:4px; font-size:0.85rem;"><strong>${g}:</strong> ${c.emoji || '📌'} ${c.titulo}</div>`;
+      }
     });
-    el.innerHTML = html || '<p class="subtitle">Aguardando sorteio...</p>';
+    el.innerHTML = temCrise ? html : '<p class="subtitle">Aguardando sorteio...</p>';
   }
 
   function updateSelects() {
@@ -811,7 +816,7 @@
           `).join('');
         }
       } else {
-        container.innerHTML = `<div class="crisis-card"><p style="text-align:center; font-weight:700;">${c?.titulo || 'Aguardando sorteio do Mestre...'}</p><p style="text-align:center; font-size:0.85rem; margin-top:6px;">${c?.desc || ''}</p></div>`;
+        container.innerHTML = `<div class="crisis-card"><p style="text-align:center; font-weight:700;">Aguardando sorteio do Mestre...</p><p style="text-align:center; font-size:0.85rem; margin-top:6px;">As crises anteriores foram limpas ou ainda não foram sorteadas.</p></div>`;
         if (containerConsultores) containerConsultores.innerHTML = '<p class="subtitle">Nenhum consultor disponível até o sorteio.</p>';
       }
     }
@@ -915,7 +920,6 @@
     const btnTravaNotif = document.getElementById('btn-toggle-trava-notif');
     if (!boxAlerta || !listaAlertas || !btnTravaNotif) return;
 
-    // Atualiza o visual do botão de trava na notificação
     if (appState.travaConsultoria) {
       btnTravaNotif.innerHTML = "🔒 Trava Ativada (Clique para Destravar)";
       btnTravaNotif.style.background = "var(--danger)";
