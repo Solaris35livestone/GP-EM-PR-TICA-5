@@ -161,12 +161,12 @@
     <div id="mestre-decisoes" class="mestre-tab-content" style="display:none;">
       <!-- ALERTA DE CONSULTORIA COM BLOQUEIO INDIVIDUAL POR CONSULTA -->
       <div id="alerta-consultoria-mestre" style="display:none;" class="box-alerta-consultoria">
-        <h3 class="title" style="font-size:1.05rem; color:var(--danger); margin-bottom:8px;">🚨 Consultorias Solicitadas (Bloqueie individualmente cada pedido)</h3>
+        <h3 class="title" style="font-size:1.05rem; color:var(--danger); margin-bottom:8px;">🚨 Consultorias Solicitadas</h3>
         <div id="lista-alertas-consultoria" style="font-size:0.9rem;"></div>
       </div>
 
       <div class="card">
-        <h3 class="title" style="font-size:1.1rem;">Decisões &amp; Avaliação Automática em Tempo Real</h3>
+        <h3 class="title" style="font-size:1.1rem;">Decisões &amp; Avaliação Tempo Real</h3>
         <p class="subtitle">Análise do Gabarito Pedagógico.</p>
         <div id="container-mestre-decisoes-detalhadas"></div>
       </div>
@@ -199,22 +199,54 @@
 
     <!-- TAB 4: CRONÔMETROS -->
     <div id="mestre-timer" class="mestre-tab-content" style="display:none;">
-      <div class="card">
-        <h3 class="title" style="font-size:1.1rem;">Cronômetro do Jogo</h3>
-        <div class="form-group">
-          <select id="stage-timer-select" onchange="setMasterTimerStage()">
-            <option value="600">Etapa 1: Setup (10 min)</option>
-            <option value="300">Etapa 2: Distribuição de Crises (5 min)</option>
-            <option value="1200">Etapa 3: Deliberação (20 min)</option>
-            <option value="1500">Etapa 4: Pitches (25 min)</option>
-            <option value="900">Etapa 5: Debriefing (15 min)</option>
-          </select>
+      <div class="grid">
+        <div class="card">
+          <h3 class="title" style="font-size:1.1rem;">Cronômetro Geral de Deliberação</h3>
+          <div class="form-group">
+            <select id="stage-timer-select" onchange="setMasterTimerStage()">
+              <option value="600">Etapa 1: Setup (10 min)</option>
+              <option value="300">Etapa 2: Distribuição de Crises (5 min)</option>
+              <option value="1200">Etapa 3: Deliberação (20 min)</option>
+              <option value="1500">Etapa 4: Pitches (25 min)</option>
+              <option value="900">Etapa 5: Debriefing (15 min)</option>
+            </select>
+          </div>
+          <div class="timer" id="display-master-timer">10:00</div>
+          <div class="btn-group" style="justify-content:center; margin-bottom:10px;">
+            <button class="btn" onclick="startMasterTimer()">Iniciar</button>
+            <button class="btn btn-sec" onclick="pauseMasterTimer()">Pausar</button>
+            <button class="btn btn-sec" onclick="resetMasterTimer()">Resetar</button>
+          </div>
+          <button class="btn btn-danger" style="width:100%; margin-top:6px;" onclick="forçarEncerramentoDeliberacao()">🛑 Encerrar Deliberação Imediatamente &amp; Travar Envios</button>
         </div>
-        <div class="timer" id="display-master-timer">10:00</div>
-        <div class="btn-group" style="justify-content:center;">
-          <button class="btn" onclick="startMasterTimer()">Iniciar</button>
-          <button class="btn btn-sec" onclick="pauseMasterTimer()">Pausar</button>
-          <button class="btn btn-sec" onclick="resetMasterTimer()">Resetar</button>
+
+        <!-- CRONÔMETRO INDIVIDUAL DE RESPOSTA / PITCH POR EQUIPE -->
+        <div class="card">
+          <h3 class="title" style="font-size:1.1rem;">⏱️ Cronômetro de Resposta / Pitch por Equipe</h3>
+          <p class="subtitle">Controle de apresentação ou defesa individual.</p>
+          
+          <div class="form-group">
+            <label for="select-grupo-timer-individual">Selecione a Equipe:</label>
+            <select id="select-grupo-timer-individual"></select>
+          </div>
+
+          <div class="form-group">
+            <label for="duracao-pitch-input">Tempo Limite (segundos ou min):</label>
+            <select id="duracao-pitch-input" onchange="resetGroupTimerDuration()">
+              <option value="180">3 minutos (Padrão Pitch)</option>
+              <option value="120">2 minutos</option>
+              <option value="300">5 minutos</option>
+              <option value="60">1 minuto</option>
+            </select>
+          </div>
+
+          <div class="timer" id="display-group-timer" style="color: var(--success);">03:00</div>
+          
+          <div class="btn-group" style="justify-content:center;">
+            <button class="btn" style="background:var(--success);" onclick="startGroupTimer()">Iniciar Relógio da Equipe</button>
+            <button class="btn btn-sec" onclick="pauseGroupTimer()">Pausar</button>
+            <button class="btn btn-sec" onclick="resetGroupTimer()">Resetar</button>
+          </div>
         </div>
       </div>
     </div>
@@ -232,7 +264,7 @@
             <label>Nota da Apresentação / Pitch (Até 20 pts):</label>
             <input type="number" id="pilar-pitch" min="0" max="20" value="15" oninput="calcMediaRanking()">
           </div>
-          <p style="font-size:0.85rem; color:var(--text-secondary);">Fundamentação Técnica e Viabilidade calculadas automaticamente pela escolha estruturada.</p>
+          <p style="font-size:0.85rem; color:var(--text-secondary);">Fundamentação Técnica e Viabilidade calculadas pela escolha estruturada.</p>
           <p style="text-align:center; font-weight:700; margin:10px 0;">Total Automático: <span id="display-nota-final" style="color:var(--brand);">0</span> / 100 pts</p>
           <button class="btn" style="width:100%;" onclick="salvarPontuacaoGrupo()">Salvar Ajuste do Pitch</button>
         </div>
@@ -251,10 +283,10 @@
         </div>
       </div>
 
-      <!-- ANÁLISE DE TENDÊNCIAS / HISTÓRICO DE RODADAS COM CARTAS -->
+      <!-- ANÁLISE DE TENDÊNCIAS / HISTÓRICO DE RODADAS COM CARTAS E TEMPO -->
       <div class="card" style="margin-top: 16px;">
-        <h3 class="title" style="font-size:1.1rem;">📈 Análise de Tendências &amp; Cartas Utilizadas</h3>
-        <p class="subtitle">Acompanhe a evolução de pontuações e quais cartas de crise.</p>
+        <h3 class="title" style="font-size:1.1rem;">📈 Análise de Tendências, Cartas &amp; Tempos</h3>
+        <p class="subtitle">Evolução de pontuações, cartas de crise e tempo.</p>
         <div id="container-historico-tendencias" style="overflow-x: auto;">
           <p class="subtitle">Nenhuma rodada salva no histórico ainda.</p>
         </div>
@@ -274,6 +306,7 @@
 
     <div class="nav-tabs">
       <button id="tab-grupo-decisao" class="tab-btn active" onclick="switchGrupoTab('decisao')">⚡ Resolução Estruturada</button>
+      <button id="tab-grupo-historico" class="tab-btn" onclick="switchGrupoTab('historico')">📜 Meu Histórico / Resumo</button>
       <button id="tab-grupo-orientacoes" class="tab-btn" onclick="switchGrupoTab('orientacoes')">📢 Comunicados</button>
     </div>
 
@@ -319,7 +352,18 @@
             <textarea id="decisao-justificativa-pitch" rows="3" placeholder="Resuma em poucas palavras a lógica da sua equipe..."></textarea>
           </div>
 
-          <button class="btn" style="width:100%;" onclick="enviarDecisaoGrupo()">Submeter Decisão para Avaliação</button>
+          <button id="btn-enviar-decisao" class="btn" style="width:100%;" onclick="enviarDecisaoGrupo()">Submeter Decisão para Avaliação</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA DE HISTÓRICO DURÁVEL DA EQUIPE -->
+    <div id="grupo-tab-content-historico" class="grupo-tab-pane" style="display:none;">
+      <div class="card">
+        <h3 class="title" style="font-size:1.1rem;">📜 Histórico de Decisões &amp; Resumo para o Pitch</h3>
+        <p class="subtitle">Consulte aqui as decisões estratégicas que sua equipe submeteu. Este registro permanece guardado para apoio nas apresentações (Pitches).</p>
+        <div id="container-historico-pessoal-grupo">
+          <p class="subtitle">Nenhuma decisão submetida ou registrada ainda.</p>
         </div>
       </div>
     </div>
@@ -453,7 +497,7 @@
       ],
       opts2: [
         { texto: 'Comunicação transparente com boletins informativos e diálogo constante com líderes.', ptsFund: 40, ptsViab: 30, ideal: true },
-        { texto: 'Manter sigilo absoluto e proibir conversas sobre a greve.', ptsFund: 5, ptsViab: 0, ideal: false }
+        { texto: 'Manter sigilo absoluto e proibir conversas sobre a greve.', ptsFund: 5, ptsViab: 5, ideal: false }
       ]
     },
     {
@@ -486,11 +530,13 @@
     grupos: ['Equipe Alfa', 'Equipe Beta', 'Equipe Gamma', 'Equipe Delta'],
     crises: {},
     decisoes: {},
+    historicoDecisoesGrupos: {},
     mensagens: [],
     pontuacoes: {},
     consultas: {},
     historicoRodadas: [],
     cartasSorteadasPorGrupo: {},
+    tempoEsgotadoGlobal: false,
     grupoAtivo: '',
     currentScreen: 'screen-home'
   };
@@ -505,6 +551,8 @@
         if (!appState.consultas) appState.consultas = {};
         if (!Array.isArray(appState.historicoRodadas)) appState.historicoRodadas = [];
         if (!appState.cartasSorteadasPorGrupo) appState.cartasSorteadasPorGrupo = {};
+        if (!appState.historicoDecisoesGrupos) appState.historicoDecisoesGrupos = {};
+        if (typeof appState.tempoEsgotadoGlobal === 'undefined') appState.tempoEsgotadoGlobal = false;
         atualizarInterface();
       } else {
         guardarEstado();
@@ -534,6 +582,7 @@
         renderHistoricoTendencias();
       } else if (active.id === 'screen-grupo') {
         renderPainelGrupo();
+        renderHistoricoPessoalGrupo();
         renderOrientacoes();
       }
     }
@@ -588,12 +637,13 @@
   };
 
   window.reiniciarRodada = function() {
-    if (confirm("Tem certeza que deseja reiniciar a rodada? As decisões enviadas, histórico de consultorias e notas serão limpas (o histórico de cartas sorteadas é mantido).")) {
+    if (confirm("Tem certeza que deseja reiniciar a rodada? As decisões ativas, histórico de consultorias e notas serão limpas.")) {
       appState.decisoes = {};
       appState.consultas = {};
       appState.pontuacoes = {};
+      appState.tempoEsgotadoGlobal = false;
       guardarEstado();
-      alert("Rodada reiniciada com sucesso! As equipes podem submeter novas decisões.");
+      alert("Rodada reiniciada com sucesso! As opções de tomada de decisão foram limpas.");
     }
   };
 
@@ -601,16 +651,16 @@
     if (confirm("Deseja apagar o registo de cartas sorteadas e limpar o sorteio atual de todas as equipes?")) {
       appState.cartasSorteadasPorGrupo = {};
       appState.crises = {};
+      appState.decisoes = {};
+      appState.tempoEsgotadoGlobal = false;
       guardarEstado();
       renderSorteioMestre();
       alert("Histórico de cartas e sorteio atual limpos com sucesso!");
     }
   };
 
-  // Trava individual por consulta específica (índice da consulta na lista do grupo)
   window.toggleTravaConsultaItem = function(g, index) {
     if (!appState.consultas || !appState.consultas[g] || !appState.consultas[g][index]) return;
-    // Inverte o estado da propriedade travado (se undefined ou false, vira true; se true, vira false)
     appState.consultas[g][index].travado = !appState.consultas[g][index].travado;
     guardarEstado();
     renderAlertaConsultoriasMestre();
@@ -618,6 +668,8 @@
 
   window.sortearCartas = function() {
     appState.crises = {};
+    appState.decisoes = {};
+    appState.tempoEsgotadoGlobal = false;
     if (!appState.cartasSorteadasPorGrupo) appState.cartasSorteadasPorGrupo = {};
 
     appState.grupos.forEach(g => {
@@ -643,15 +695,21 @@
 
     guardarEstado();
     renderSorteioMestre();
-    alert("Novas cartas de crise sorteadas (garantindo que nenhuma equipe repita cartas anteriores)!");
+    alert("Novas cartas de crise sorteadas!");
   };
 
   window.salvarRodadaNoHistorico = function() {
     if (!appState.historicoRodadas) appState.historicoRodadas = [];
     const numeroRodada = appState.historicoRodadas.length + 1;
+    
+    // Captura o tempo restante exibido no cronômetro geral para salvar na tendência
+    const displayTempoEl = document.getElementById('display-master-timer');
+    const tempoRestanteGeral = displayTempoEl ? displayTempoEl.innerText : '00:00';
+
     const dadosRodada = {
       rodada: numeroRodada,
       hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
+      tempoRestante: tempoRestanteGeral,
       placar: {},
       cartasRodada: {}
     };
@@ -667,7 +725,7 @@
     appState.historicoRodadas.push(dadosRodada);
     guardarEstado();
     renderHistoricoTendencias();
-    alert(`Rodada ${numeroRodada} salva com sucesso no histórico de tendências!`);
+    alert(`Rodada ${numeroRodada} salva com sucesso no histórico de tendências (com o tempo registrado)!`);
   };
 
   window.limparHistoricoRodadas = function() {
@@ -688,12 +746,13 @@
       return;
     }
 
-    let html = `<table><thead><tr><th>Rodada / Hora</th>`;
+    let html = `<table><thead><tr><th>Rodada / Hora</th><th>Tempo Reg.</th>`;
     appState.grupos.forEach(g => { html += `<th>${g} (Placar / Carta)</th>`; });
     html += `</tr></thead><tbody>`;
 
     historico.forEach(h => {
-      html += `<tr><td><strong>Rodada ${h.rodada}</strong><br><small>${h.hora}</small></td>`;
+      const tempoReg = h.tempoRestante || 'N/A';
+      html += `<tr><td><strong>Rodada ${h.rodada}</strong><br><small>${h.hora}</small></td><td><span class="badge badge-warning">⏱️ ${tempoReg}</span></td>`;
       appState.grupos.forEach(g => {
         const pts = h.placar[g]?.total || 0;
         const cartaUsada = h.cartasRodada?.[g] || 'N/A';
@@ -725,9 +784,11 @@
     const selL = document.getElementById('select-grupo-login');
     const selM = document.getElementById('select-destinatario-msg');
     const selE = document.getElementById('select-grupo-eval');
+    const selInd = document.getElementById('select-grupo-timer-individual');
     if (selL) selL.innerHTML = appState.grupos.map(g => `<option value="${g}">${g}</option>`).join('');
     if (selM) selM.innerHTML = '<option value="TODOS">Todas as Equipes (Aviso Geral)</option>' + appState.grupos.map(g => `<option value="${g}">${g}</option>`).join('');
     if (selE) selE.innerHTML = appState.grupos.map(g => `<option value="${g}">${g}</option>`).join('');
+    if (selInd) selInd.innerHTML = appState.grupos.map(g => `<option value="${g}">${g}</option>`).join('');
   }
 
   window.switchMestreTab = function(tab) {
@@ -742,10 +803,15 @@
   window.switchGrupoTab = function(tab) {
     document.querySelectorAll('.grupo-tab-pane').forEach(p => p.style.display = 'none');
     document.getElementById('tab-grupo-decisao').classList.remove('active');
+    document.getElementById('tab-grupo-historico').classList.remove('active');
     document.getElementById('tab-grupo-orientacoes').classList.remove('active');
+
     if (tab === 'decisao') {
       document.getElementById('grupo-tab-content-decisao').style.display = 'block';
       document.getElementById('tab-grupo-decisao').classList.add('active');
+    } else if (tab === 'historico') {
+      document.getElementById('grupo-tab-content-historico').style.display = 'block';
+      document.getElementById('tab-grupo-historico').classList.add('active');
     } else {
       document.getElementById('grupo-tab-content-orientacoes').style.display = 'block';
       document.getElementById('tab-grupo-orientacoes').classList.add('active');
@@ -772,6 +838,23 @@
     const c = appState.crises && appState.crises[g];
     const container = document.getElementById('container-carta-grupo');
     const containerConsultores = document.getElementById('container-consultores-grupo');
+    const decisaoSalva = appState.decisoes && appState.decisoes[g];
+    const btnEnviar = document.getElementById('btn-enviar-decisao');
+
+    const todasEnviadas = appState.grupos.every(eq => appState.decisoes && appState.decisoes[eq]);
+    const bloqueadoPorTempoOuEnvio = appState.tempoEsgotadoGlobal || todasEnviadas;
+
+    if (btnEnviar) {
+      if (bloqueadoPorTempoOuEnvio) {
+        btnEnviar.innerText = "🔒 Prazo Encerrado / Decisões Fechadas";
+        btnEnviar.style.background = "var(--danger)";
+        btnEnviar.disabled = true;
+      } else {
+        btnEnviar.innerText = "Submeter Decisão para Avaliação";
+        btnEnviar.style.background = "var(--brand)";
+        btnEnviar.disabled = false;
+      }
+    }
 
     if (container) {
       if (c && c.opts1) {
@@ -794,11 +877,12 @@
 
         const containerOpts1 = document.getElementById('opts-q1');
         const containerOpts2 = document.getElementById('opts-q2');
+        const pitchTextEl = document.getElementById('decisao-justificativa-pitch');
         
         if (containerOpts1 && c.opts1) {
           containerOpts1.innerHTML = c.opts1.map((opt, i) => `
             <label class="opt-card">
-              <input type="radio" name="opt_q1" value="${i}" ${i === 0 ? 'checked' : ''}>
+              <input type="radio" name="opt_q1" value="${i}">
               <span style="font-size:0.85rem;">${opt.texto}</span>
             </label>
           `).join('');
@@ -807,14 +891,22 @@
         if (containerOpts2 && c.opts2) {
           containerOpts2.innerHTML = c.opts2.map((opt, i) => `
             <label class="opt-card">
-              <input type="radio" name="opt_q2" value="${i}" ${i === 0 ? 'checked' : ''}>
+              <input type="radio" name="opt_q2" value="${i}">
               <span style="font-size:0.85rem;">${opt.texto}</span>
             </label>
           `).join('');
         }
+
+        if (pitchTextEl) {
+          pitchTextEl.value = decisaoSalva ? (decisaoSalva.pitchText || '') : '';
+        }
       } else {
         container.innerHTML = `<div class="crisis-card"><p style="text-align:center; font-weight:700;">Aguardando sorteio do Mestre...</p><p style="text-align:center; font-size:0.85rem; margin-top:6px;">As crises anteriores foram limpas ou ainda não foram sorteadas.</p></div>`;
         if (containerConsultores) containerConsultores.innerHTML = '<p class="subtitle">Nenhum consultor disponível até o sorteio.</p>';
+        const containerOpts1 = document.getElementById('opts-q1');
+        const containerOpts2 = document.getElementById('opts-q2');
+        if (containerOpts1) containerOpts1.innerHTML = '';
+        if (containerOpts2) containerOpts2.innerHTML = '';
       }
     }
 
@@ -840,6 +932,33 @@
         histContainer.innerHTML = htmlConsultas;
       }
     }
+  }
+
+  function renderHistoricoPessoalGrupo() {
+    const g = appState.grupoAtivo;
+    const container = document.getElementById('container-historico-pessoal-grupo');
+    if (!container || !g) return;
+
+    const historicoGrupo = (appState.historicoDecisoesGrupos && appState.historicoDecisoesGrupos[g]) || [];
+    if (historicoGrupo.length === 0) {
+      container.innerHTML = '<p class="subtitle">Nenhuma decisão submetida ou registrada para esta equipe ainda.</p>';
+      return;
+    }
+
+    let html = '';
+    historicoGrupo.forEach((h, idx) => {
+      html += `
+        <div style="background:#f8fafc; border:1px solid var(--border); border-left:4px solid var(--brand); padding:12px; border-radius:8px; margin-bottom:12px; font-size:0.85rem;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+            <strong style="color:var(--brand);">📄 ${h.cartaTitulo}</strong>
+            <span class="badge badge-success">${h.hora}</span>
+          </div>
+          <p style="margin-bottom:4px;"><strong>1. Decisão Tática:</strong> ${h.q1Texto}</p>
+          <p style="margin-bottom:4px;"><strong>2. Reformulação Estrutural:</strong> ${h.q2Texto}</p>
+          <p style="margin-top:6px; background:#fff; padding:8px; border:1px solid #e2e8f0; border-radius:6px;"><strong>Síntese do Pitch:</strong> ${h.pitchText || 'Nenhuma síntese descrita.'}</p>
+        </div>`;
+    });
+    container.innerHTML = html;
   }
 
   window.registrarConsultoria = function(esp) {
@@ -876,8 +995,21 @@
     const c = appState.crises && appState.crises[g];
     if (!g || !c || !c.opts1) return;
 
-    const opt1Idx = parseInt(document.querySelector('input[name="opt_q1"]:checked')?.value || 0);
-    const opt2Idx = parseInt(document.querySelector('input[name="opt_q2"]:checked')?.value || 0);
+    if (appState.tempoEsgotadoGlobal) {
+      alert("O tempo esgotou! Não é mais possível submeter decisões.");
+      return;
+    }
+
+    const opt1Checked = document.querySelector('input[name="opt_q1"]:checked');
+    const opt2Checked = document.querySelector('input[name="opt_q2"]:checked');
+
+    if (!opt1Checked || !opt2Checked) {
+      alert("Por favor, selecione uma opção em cada uma das questões antes de submeter!");
+      return;
+    }
+
+    const opt1Idx = parseInt(opt1Checked.value);
+    const opt2Idx = parseInt(opt2Checked.value);
     const pitchText = document.getElementById('decisao-justificativa-pitch').value.trim();
 
     const opt1 = c.opts1[opt1Idx];
@@ -888,6 +1020,8 @@
     const cLista = (appState.consultas && appState.consultas[g]) || [];
     const ptsSaldo = Math.max(0, Math.round((100 - (cLista.length * 5)) / 10));
 
+    const timestampHora = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+
     if (!appState.decisoes) appState.decisoes = {};
     appState.decisoes[g] = {
       q1Texto: opt1.texto,
@@ -897,8 +1031,18 @@
       ptsViab,
       ptsSaldo,
       totalAuto: ptsFund + ptsViab + ptsSaldo,
-      hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})
+      hora: timestampHora
     };
+
+    if (!appState.historicoDecisoesGrupos) appState.historicoDecisoesGrupos = {};
+    if (!appState.historicoDecisoesGrupos[g]) appState.historicoDecisoesGrupos[g] = [];
+    appState.historicoDecisoesGrupos[g].push({
+      cartaTitulo: c.titulo,
+      q1Texto: opt1.texto,
+      q2Texto: opt2.texto,
+      pitchText,
+      hora: timestampHora
+    });
 
     if (!appState.pontuacoes) appState.pontuacoes = {};
     appState.pontuacoes[g] = {
@@ -910,7 +1054,8 @@
     };
 
     guardarEstado();
-    alert("Decisão submetida e avaliada automaticamente!");
+    alert("Decisão submetida com sucesso! O resumo foi guardado na sua aba de Histórico para consulta no Pitch.");
+    atualizarInterface();
   };
 
   function renderAlertaConsultoriasMestre() {
@@ -1028,26 +1173,87 @@
     `).join('') : '<p class="subtitle">Nenhum comunicado ativo.</p>';
   }
 
-  // TIMERS
+  // TIMER GERAL
   let timerMaster, masterTime = 600;
   window.setMasterTimerStage = function() {
     masterTime = parseInt(document.getElementById('stage-timer-select').value);
-    window.pauseMasterTimer(); updateTimerDisplay();
+    window.pauseMasterTimer(); 
+    appState.tempoEsgotadoGlobal = false;
+    guardarEstado();
+    updateTimerDisplay();
   };
+
   function updateTimerDisplay() {
     const m = Math.floor(masterTime / 60), s = masterTime % 60;
-    document.getElementById('display-master-timer').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    const el = document.getElementById('display-master-timer');
+    if (el) el.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
   }
+
   window.startMasterTimer = function() {
     if (!timerMaster) {
       timerMaster = setInterval(() => {
-        if (masterTime > 0) { masterTime--; updateTimerDisplay(); }
-        else { clearInterval(timerMaster); timerMaster = null; }
+        if (masterTime > 0) { 
+          masterTime--; 
+          updateTimerDisplay(); 
+        } else { 
+          clearInterval(timerMaster); 
+          timerMaster = null; 
+          appState.tempoEsgotadoGlobal = true;
+          guardarEstado();
+          alert("⏰ O tempo esgotado! O envio de decisões foi travado automaticamente para todas as equipes.");
+          atualizarInterface();
+        }
       }, 1000);
     }
   };
+
   window.pauseMasterTimer = function() { clearInterval(timerMaster); timerMaster = null; };
   window.resetMasterTimer = function() { window.pauseMasterTimer(); window.setMasterTimerStage(); };
+
+  window.forçarEncerramentoDeliberacao = function() {
+    if (confirm("Deseja encerrar o tempo de deliberação agora mesmo? O envio das decisões será travado para todas as equipes.")) {
+      window.pauseMasterTimer();
+      appState.tempoEsgotadoGlobal = true;
+      guardarEstado();
+      masterTime = 0;
+      updateTimerDisplay();
+      alert("Prazo encerrado pelo Mestre! Envios travados.");
+      atualizarInterface();
+    }
+  };
+
+  // TIMER INDIVIDUAL DE RESPOSTA / PITCH POR EQUIPE
+  let timerGroup, groupTime = 180;
+  window.resetGroupTimerDuration = function() {
+    groupTime = parseInt(document.getElementById('duracao-pitch-input').value);
+    window.pauseGroupTimer();
+    updateGroupTimerDisplay();
+  };
+
+  function updateGroupTimerDisplay() {
+    const m = Math.floor(groupTime / 60), s = groupTime % 60;
+    const el = document.getElementById('display-group-timer');
+    if (el) el.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+  }
+
+  window.startGroupTimer = function() {
+    const grupoSel = document.getElementById('select-grupo-timer-individual').value;
+    if (!timerGroup) {
+      timerGroup = setInterval(() => {
+        if (groupTime > 0) {
+          groupTime--;
+          updateGroupTimerDisplay();
+        } else {
+          clearInterval(timerGroup);
+          timerGroup = null;
+          alert(`⏰ O tempo de apresentação/resposta da ${grupoSel} esgotou!`);
+        }
+      }, 1000);
+    }
+  };
+
+  window.pauseGroupTimer = function() { clearInterval(timerGroup); timerGroup = null; };
+  window.resetGroupTimer = function() { window.pauseGroupTimer(); window.resetGroupTimerDuration(); };
 
   // RANKING
   window.carregarPontuacaoGrupo = function() {
