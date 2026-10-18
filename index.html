@@ -49,7 +49,6 @@
     .btn-lg { padding: 14px 24px; font-size: 1rem; border-radius: var(--radius); width: 100%; max-width: 320px; }
     .box-aviso { background: #eff6ff; border: 1px solid #bfdbfe; border-left: 6px solid var(--brand); border-radius: var(--radius); padding: 14px; margin-bottom: 14px; }
     .box-alerta-consultoria { background: #fef2f2; border: 1px solid #fecaca; border-left: 6px solid var(--danger); padding: 12px; border-radius: 8px; margin-bottom: 14px; }
-    .q-box { background: #ffffff; border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-top: 8px; }
     .pts-badge { background: #e0e7ff; color: #3730a3; font-weight: 700; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; display: inline-block; }
     .opt-card { border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 8px; background: #f8fafc; cursor: pointer; display: flex; align-items: flex-start; gap: 10px; }
     .opt-card:hover { border-color: var(--brand); background: #f0f7ff; }
@@ -147,11 +146,11 @@
         </div>
         <div class="card">
           <h3 class="title" style="font-size:1.1rem;">Controle da Rodada &amp; Cartas</h3>
-          <p class="subtitle">Sorteia novas crises, reinicia a rodada ou limpa a memória de cartas usadas.</p>
+          <p class="subtitle">Sorteia novas crises, reinicia a rodada ou limpa o histórico de cartas.</p>
           <div style="display:flex; flex-direction:column; gap:10px;">
             <button class="btn" onclick="sortearCartas()">Sortear Cartas de Crise</button>
             <button class="btn btn-danger" onclick="reiniciarRodada()">🔄 Reiniciar Rodada</button>
-            <button class="btn btn-sec" onclick="limparHistoricoCartasApenas()" style="border-color: var(--danger); color: var(--danger);">🗑️ Limpar Histórico de Cartas</button>
+            <button class="btn btn-sec" onclick="limparHistoricoCartasApenas()" style="border-color: var(--danger); color: var(--danger);">🗑️ Limpar Histórico e Sorteio Atual</button>
           </div>
           <div id="resultado-sorteio-mestre" style="margin-top:12px;"></div>
         </div>
@@ -160,12 +159,9 @@
 
     <!-- TAB 2: DECISÕES E ALERTAS DE CONSULTORIA -->
     <div id="mestre-decisoes" class="mestre-tab-content" style="display:none;">
-      <!-- ALERTA DE CONSULTORIA COM BOTÃO DE TRAVA INTEGRADO -->
+      <!-- ALERTA DE CONSULTORIA COM BLOQUEIO INDIVIDUAL POR CONSULTA -->
       <div id="alerta-consultoria-mestre" style="display:none;" class="box-alerta-consultoria">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
-          <h3 class="title" style="font-size:1.05rem; color:var(--danger); margin:0;">🚨 Consultoria Solicitada!</h3>
-          <button id="btn-toggle-trava-notif" class="btn" onclick="toggleTravaConsultoria()" style="font-size: 0.8rem; padding: 6px 12px;"></button>
-        </div>
+        <h3 class="title" style="font-size:1.05rem; color:var(--danger); margin-bottom:8px;">🚨 Consultorias Solicitadas (Bloqueie individualmente cada pedido)</h3>
         <div id="lista-alertas-consultoria" style="font-size:0.9rem;"></div>
       </div>
 
@@ -495,7 +491,6 @@
     consultas: {},
     historicoRodadas: [],
     cartasSorteadasPorGrupo: {},
-    travaConsultoria: false,
     grupoAtivo: '',
     currentScreen: 'screen-home'
   };
@@ -510,7 +505,6 @@
         if (!appState.consultas) appState.consultas = {};
         if (!Array.isArray(appState.historicoRodadas)) appState.historicoRodadas = [];
         if (!appState.cartasSorteadasPorGrupo) appState.cartasSorteadasPorGrupo = {};
-        if (typeof appState.travaConsultoria === 'undefined') appState.travaConsultoria = false;
         atualizarInterface();
       } else {
         guardarEstado();
@@ -603,18 +597,21 @@
     }
   };
 
-  // Limpa o histórico de cartas sorteadas e também remove visualmente das telas das equipes e do mestre
   window.limparHistoricoCartasApenas = function() {
-    if (confirm("Deseja apagar o registo de cartas sorteadas e limpar as crises ativas das equipes? (Isso resetará as cartas ativas e o histórico de baralho, mantendo placares intactos).")) {
+    if (confirm("Deseja apagar o registo de cartas sorteadas e limpar o sorteio atual de todas as equipes?")) {
       appState.cartasSorteadasPorGrupo = {};
-      appState.crises = {}; // Limpa as crises ativas para sumirem visualmente
+      appState.crises = {};
       guardarEstado();
-      alert("Histórico e cartas ativas limpos com sucesso! As equipes agora estão sem cartas até um novo sorteio.");
+      renderSorteioMestre();
+      alert("Histórico de cartas e sorteio atual limpos com sucesso!");
     }
   };
 
-  window.toggleTravaConsultoria = function() {
-    appState.travaConsultoria = !appState.travaConsultoria;
+  // Trava individual por consulta específica (índice da consulta na lista do grupo)
+  window.toggleTravaConsultaItem = function(g, index) {
+    if (!appState.consultas || !appState.consultas[g] || !appState.consultas[g][index]) return;
+    // Inverte o estado da propriedade travado (se undefined ou false, vira true; se true, vira false)
+    appState.consultas[g][index].travado = !appState.consultas[g][index].travado;
     guardarEstado();
     renderAlertaConsultoriasMestre();
   };
@@ -715,7 +712,7 @@
     let html = '';
     let temCrise = false;
     appState.grupos.forEach(g => {
-      const c = appState.crises[g];
+      const c = appState.crises && appState.crises[g];
       if (c && c.titulo) {
         temCrise = true;
         html += `<div style="padding:6px; background:#fff; border:1px solid #e2e8f0; margin-bottom:4px; font-size:0.85rem;"><strong>${g}:</strong> ${c.emoji || '📌'} ${c.titulo}</div>`;
@@ -772,7 +769,7 @@
     const saldo = Math.max(0, 100 - (cLista.length * 5));
     document.getElementById('display-saldo-orçamento').innerText = `Orçamento: ${saldo} pts`;
 
-    const c = appState.crises[g];
+    const c = appState.crises && appState.crises[g];
     const container = document.getElementById('container-carta-grupo');
     const containerConsultores = document.getElementById('container-consultores-grupo');
 
@@ -832,7 +829,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; background:#f1f5f9; padding:4px 8px; border-radius:4px;">
               <span>• ${item.esp} (${item.hora})</span>`;
               
-          if (appState.travaConsultoria) {
+          if (item.travado) {
             htmlConsultas += `<span class="badge badge-danger" style="font-size:0.65rem;">🔒 Travado pela Banca</span>`;
           } else {
             htmlConsultas += `<button onclick="estornarConsultoria(${idx})" class="btn-danger" style="padding:2px 6px; font-size:0.7rem;">Cancelar (-5pts)</button>`;
@@ -850,20 +847,22 @@
     if (!g) return;
     if (!appState.consultas) appState.consultas = {};
     if (!appState.consultas[g]) appState.consultas[g] = [];
-    appState.consultas[g].push({ esp, hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) });
+    appState.consultas[g].push({ esp, hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}), travado: false });
     guardarEstado();
     renderPainelGrupo();
     alert(`Consultoria com ${esp} registrada (-5 pts). O Mestre foi alertado!`);
   };
 
   window.estornarConsultoria = function(index) {
-    if (appState.travaConsultoria) {
-      alert("Aviso: A trava de consultorias está ativa pela Banca. Não é permitido cancelar ou estornar pontos no momento.");
+    const g = appState.grupoAtivo;
+    if (!g || !appState.consultas || !appState.consultas[g]) return;
+    
+    const consultaItem = appState.consultas[g][index];
+    if (consultaItem && consultaItem.travado) {
+      alert("Aviso: Esta consulta específica foi travada pela Banca. Não é permitido estorná-la.");
       return;
     }
 
-    const g = appState.grupoAtivo;
-    if (!g || !appState.consultas || !appState.consultas[g]) return;
     if (confirm("Deseja cancelar esta consultoria e devolver 5 pontos ao saldo?")) {
       appState.consultas[g].splice(index, 1);
       guardarEstado();
@@ -874,7 +873,7 @@
 
   window.enviarDecisaoGrupo = function() {
     const g = appState.grupoAtivo;
-    const c = appState.crises[g];
+    const c = appState.crises && appState.crises[g];
     if (!g || !c || !c.opts1) return;
 
     const opt1Idx = parseInt(document.querySelector('input[name="opt_q1"]:checked')?.value || 0);
@@ -917,16 +916,7 @@
   function renderAlertaConsultoriasMestre() {
     const boxAlerta = document.getElementById('alerta-consultoria-mestre');
     const listaAlertas = document.getElementById('lista-alertas-consultoria');
-    const btnTravaNotif = document.getElementById('btn-toggle-trava-notif');
-    if (!boxAlerta || !listaAlertas || !btnTravaNotif) return;
-
-    if (appState.travaConsultoria) {
-      btnTravaNotif.innerHTML = "🔒 Trava Ativada (Clique para Destravar)";
-      btnTravaNotif.style.background = "var(--danger)";
-    } else {
-      btnTravaNotif.innerHTML = "🔓 Trava Desativada (Clique para Travar)";
-      btnTravaNotif.style.background = "var(--success)";
-    }
+    if (!boxAlerta || !listaAlertas) return;
 
     let htmlAlertas = '';
     let totalConsultasPendentes = 0;
@@ -934,10 +924,23 @@
     appState.grupos.forEach(g => {
       const cLista = (appState.consultas && appState.consultas[g]) || [];
       if (cLista.length > 0) {
-        cLista.forEach(item => {
-          totalConsultasPendentes++;
-          htmlAlertas += `<div style="margin-bottom:4px;"><strong>${g}</strong> solicitou ajuda de <strong>${item.esp}</strong> às <em>${item.hora}</em></div>`;
+        totalConsultasPendentes++;
+        htmlAlertas += `<div style="background:#fff; border:1px solid #fecaca; padding:8px; border-radius:6px; margin-bottom:6px;">
+          <strong>${g}:</strong><br>`;
+        
+        cLista.forEach((item, index) => {
+          const travado = item.travado;
+          const btnEstilo = travado ? "background: var(--danger); color: white;" : "background: var(--success); color: white;";
+          const btnTexto = travado ? "🔒 Travada (Clique p/ Destravar)" : "🔓 Destravada (Clique p/ Travar)";
+          
+          htmlAlertas += `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; padding-top:4px; border-top:1px dashed #e2e8f0; gap:8px; flex-wrap:wrap;">
+              <span>• ${item.esp} (${item.hora})</span>
+              <button class="btn" style="font-size:0.7rem; padding:4px 8px; ${btnEstilo}" onclick="toggleTravaConsultaItem('${g}', ${index})">${btnTexto}</button>
+            </div>`;
         });
+
+        htmlAlertas += `</div>`;
       }
     });
 
@@ -1003,6 +1006,14 @@
     });
     container.innerHTML = html;
   }
+
+  window.excluirMensagem = function(idx) {
+    if (confirm("Tem certeza que deseja excluir esta mensagem do histórico e do painel das equipes?")) {
+      appState.mensagens.splice(idx, 1);
+      guardarEstado();
+      renderGerenciarMensagensMestre();
+    }
+  };
 
   function renderOrientacoes() {
     const g = appState.grupoAtivo;
