@@ -136,7 +136,7 @@
             <label for="num-grupos">Quantidade de Equipes (3 a 6):</label>
             <select id="num-grupos" onchange="alterarQuantidadeGrupos()">
               <option value="3">3 Equipes</option>
-              <option value="4" selected>4 Equipes</option>
+              <option value="4">4 Equipes</option>
               <option value="5">5 Equipes</option>
               <option value="6">6 Equipes</option>
             </select>
@@ -161,12 +161,12 @@
     <div id="mestre-decisoes" class="mestre-tab-content" style="display:none;">
       <!-- ALERTA DE CONSULTORIA COM BLOQUEIO INDIVIDUAL POR CONSULTA -->
       <div id="alerta-consultoria-mestre" style="display:none;" class="box-alerta-consultoria">
-        <h3 class="title" style="font-size:1.05rem; color:var(--danger); margin-bottom:8px;">🚨 Consultorias Solicitadas</h3>
+        <h3 class="title" style="font-size:1.05rem; color:var(--danger); margin-bottom:8px;">🚨 Consultorias Solicitadas (Bloqueie individualmente cada pedido)</h3>
         <div id="lista-alertas-consultoria" style="font-size:0.9rem;"></div>
       </div>
 
       <div class="card">
-        <h3 class="title" style="font-size:1.1rem;">Decisões &amp; Avaliação Tempo Real</h3>
+        <h3 class="title" style="font-size:1.1rem;">Decisões &amp; Avaliação Automática em Tempo Real</h3>
         <p class="subtitle">Análise do Gabarito Pedagógico.</p>
         <div id="container-mestre-decisoes-detalhadas"></div>
       </div>
@@ -223,15 +223,15 @@
         <!-- CRONÔMETRO INDIVIDUAL DE RESPOSTA / PITCH POR EQUIPE -->
         <div class="card">
           <h3 class="title" style="font-size:1.1rem;">⏱️ Cronômetro de Resposta / Pitch por Equipe</h3>
-          <p class="subtitle">Controle de apresentação ou defesa individual.</p>
+          <p class="subtitle">Controle o tempo de apresentação ou defesa individual de cada grupo.</p>
           
           <div class="form-group">
             <label for="select-grupo-timer-individual">Selecione a Equipe:</label>
-            <select id="select-grupo-timer-individual"></select>
+            <select id="select-grupo-timer-individual" onchange="mudarGrupoPitch()"></select>
           </div>
 
           <div class="form-group">
-            <label for="duracao-pitch-input">Tempo Limite (segundos ou min):</label>
+            <label for="duracao-pitch-input">Tempo Limite da Fase:</label>
             <select id="duracao-pitch-input" onchange="resetGroupTimerDuration()">
               <option value="180">3 minutos (Padrão Pitch)</option>
               <option value="120">2 minutos</option>
@@ -243,10 +243,11 @@
           <div class="timer" id="display-group-timer" style="color: var(--success);">03:00</div>
           
           <div class="btn-group" style="justify-content:center;">
-            <button class="btn" style="background:var(--success);" onclick="startGroupTimer()">Iniciar Relógio da Equipe</button>
-            <button class="btn btn-sec" onclick="pauseGroupTimer()">Pausar</button>
+            <button class="btn" style="background:var(--success);" onclick="startGroupTimer()">Iniciar Relógio</button>
+            <button class="btn btn-sec" onclick="pausarEfetuarRegistroPitch()">Pausar &amp; Salvar Tempo</button>
             <button class="btn btn-sec" onclick="resetGroupTimer()">Resetar</button>
           </div>
+          <div id="status-tempo-equipe-atual" style="margin-top:10px; font-size:0.85rem; font-weight:600; text-align:center; color:var(--text-secondary);"></div>
         </div>
       </div>
     </div>
@@ -264,7 +265,7 @@
             <label>Nota da Apresentação / Pitch (Até 20 pts):</label>
             <input type="number" id="pilar-pitch" min="0" max="20" value="15" oninput="calcMediaRanking()">
           </div>
-          <p style="font-size:0.85rem; color:var(--text-secondary);">Fundamentação Técnica e Viabilidade calculadas pela escolha estruturada.</p>
+          <p style="font-size:0.85rem; color:var(--text-secondary);">Fundamentação Técnica e Viabilidade calculadas automaticamente pela escolha estruturada.</p>
           <p style="text-align:center; font-weight:700; margin:10px 0;">Total Automático: <span id="display-nota-final" style="color:var(--brand);">0</span> / 100 pts</p>
           <button class="btn" style="width:100%;" onclick="salvarPontuacaoGrupo()">Salvar Ajuste do Pitch</button>
         </div>
@@ -283,10 +284,10 @@
         </div>
       </div>
 
-      <!-- ANÁLISE DE TENDÊNCIAS / HISTÓRICO DE RODADAS COM CARTAS E TEMPO -->
+      <!-- ANÁLISE DE TENDÊNCIAS / HISTÓRICO DE RODADAS COM TEMPOS DE PITCH POR EQUIPE -->
       <div class="card" style="margin-top: 16px;">
-        <h3 class="title" style="font-size:1.1rem;">📈 Análise de Tendências, Cartas &amp; Tempos</h3>
-        <p class="subtitle">Evolução de pontuações, cartas de crise e tempo.</p>
+        <h3 class="title" style="font-size:1.1rem;">📈 Análise de Tendências, Cartas &amp; Tempos de Pitch</h3>
+        <p class="subtitle">Acompanhe a evolução de pontuações, cartas de crise e o tempo de apresentação gasto por cada equipe.</p>
         <div id="container-historico-tendencias" style="overflow-x: auto;">
           <p class="subtitle">Nenhuma rodada salva no histórico ainda.</p>
         </div>
@@ -531,6 +532,7 @@
     crises: {},
     decisoes: {},
     historicoDecisoesGrupos: {},
+    temposPitchEquipes: {}, // Armazena o tempo gasto por cada equipe no pitch da rodada atual
     mensagens: [],
     pontuacoes: {},
     consultas: {},
@@ -552,6 +554,7 @@
         if (!Array.isArray(appState.historicoRodadas)) appState.historicoRodadas = [];
         if (!appState.cartasSorteadasPorGrupo) appState.cartasSorteadasPorGrupo = {};
         if (!appState.historicoDecisoesGrupos) appState.historicoDecisoesGrupos = {};
+        if (!appState.temposPitchEquipes) appState.temposPitchEquipes = {};
         if (typeof appState.tempoEsgotadoGlobal === 'undefined') appState.tempoEsgotadoGlobal = false;
         atualizarInterface();
       } else {
@@ -610,6 +613,10 @@
     const container = document.getElementById('container-inputs-grupos');
     if (!container) return;
     const num = parseInt(numEl.value);
+    
+    // Atualiza o select do número de grupos para refletir a quantidade real
+    numEl.value = appState.grupos.length;
+
     container.innerHTML = '';
     for (let i = 0; i < num; i++) {
       const val = (appState.grupos && appState.grupos[i]) || `Equipe ${i+1}`;
@@ -637,13 +644,14 @@
   };
 
   window.reiniciarRodada = function() {
-    if (confirm("Tem certeza que deseja reiniciar a rodada? As decisões ativas, histórico de consultorias e notas serão limpas.")) {
+    if (confirm("Tem certeza que deseja reiniciar a rodada? As decisões ativas, histórico de consultorias, notas e tempos de pitch serão limpos.")) {
       appState.decisoes = {};
       appState.consultas = {};
       appState.pontuacoes = {};
+      appState.temposPitchEquipes = {};
       appState.tempoEsgotadoGlobal = false;
       guardarEstado();
-      alert("Rodada reiniciada com sucesso! As opções de tomada de decisão foram limpas.");
+      alert("Rodada reiniciada com sucesso!");
     }
   };
 
@@ -652,6 +660,7 @@
       appState.cartasSorteadasPorGrupo = {};
       appState.crises = {};
       appState.decisoes = {};
+      appState.temposPitchEquipes = {};
       appState.tempoEsgotadoGlobal = false;
       guardarEstado();
       renderSorteioMestre();
@@ -669,6 +678,7 @@
   window.sortearCartas = function() {
     appState.crises = {};
     appState.decisoes = {};
+    appState.temposPitchEquipes = {};
     appState.tempoEsgotadoGlobal = false;
     if (!appState.cartasSorteadasPorGrupo) appState.cartasSorteadasPorGrupo = {};
 
@@ -695,23 +705,19 @@
 
     guardarEstado();
     renderSorteioMestre();
-    alert("Novas cartas de crise sorteadas!");
+    alert("Novas cartas de crise sorteadas com sucesso para todas as equipes!");
   };
 
   window.salvarRodadaNoHistorico = function() {
     if (!appState.historicoRodadas) appState.historicoRodadas = [];
     const numeroRodada = appState.historicoRodadas.length + 1;
     
-    // Captura o tempo restante exibido no cronômetro geral para salvar na tendência
-    const displayTempoEl = document.getElementById('display-master-timer');
-    const tempoRestanteGeral = displayTempoEl ? displayTempoEl.innerText : '00:00';
-
     const dadosRodada = {
       rodada: numeroRodada,
       hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
-      tempoRestante: tempoRestanteGeral,
       placar: {},
-      cartasRodada: {}
+      cartasRodada: {},
+      temposPitch: { ...appState.temposPitchEquipes }
     };
 
     appState.grupos.forEach(g => {
@@ -725,7 +731,7 @@
     appState.historicoRodadas.push(dadosRodada);
     guardarEstado();
     renderHistoricoTendencias();
-    alert(`Rodada ${numeroRodada} salva com sucesso no histórico de tendências (com o tempo registrado)!`);
+    alert(`Rodada ${numeroRodada} salva com sucesso no histórico de tendências (com os tempos de pitch das equipes)!`);
   };
 
   window.limparHistoricoRodadas = function() {
@@ -746,17 +752,17 @@
       return;
     }
 
-    let html = `<table><thead><tr><th>Rodada / Hora</th><th>Tempo Reg.</th>`;
-    appState.grupos.forEach(g => { html += `<th>${g} (Placar / Carta)</th>`; });
+    let html = `<table><thead><tr><th>Rodada / Hora</th>`;
+    appState.grupos.forEach(g => { html += `<th>${g} (Placar / Carta / Tempo Pitch)</th>`; });
     html += `</tr></thead><tbody>`;
 
     historico.forEach(h => {
-      const tempoReg = h.tempoRestante || 'N/A';
-      html += `<tr><td><strong>Rodada ${h.rodada}</strong><br><small>${h.hora}</small></td><td><span class="badge badge-warning">⏱️ ${tempoReg}</span></td>`;
+      html += `<tr><td><strong>Rodada ${h.rodada}</strong><br><small>${h.hora}</small></td>`;
       appState.grupos.forEach(g => {
         const pts = h.placar[g]?.total || 0;
         const cartaUsada = h.cartasRodada?.[g] || 'N/A';
-        html += `<td><strong>${pts} pts</strong><br><small style="color:var(--text-secondary);">📄 ${cartaUsada}</small></td>`;
+        const tempoGasto = h.temposPitch?.[g] ? formatarTempoMMSS(h.temposPitch[g]) : 'Não cronometrado';
+        html += `<td><strong>${pts} pts</strong><br><small style="color:var(--text-secondary);">📄 ${cartaUsada}</small><br><span class="badge badge-warning">⏱️ Pitch: ${tempoGasto}</span></td>`;
       });
       html += `</tr>`;
     });
@@ -788,7 +794,11 @@
     if (selL) selL.innerHTML = appState.grupos.map(g => `<option value="${g}">${g}</option>`).join('');
     if (selM) selM.innerHTML = '<option value="TODOS">Todas as Equipes (Aviso Geral)</option>' + appState.grupos.map(g => `<option value="${g}">${g}</option>`).join('');
     if (selE) selE.innerHTML = appState.grupos.map(g => `<option value="${g}">${g}</option>`).join('');
-    if (selInd) selInd.innerHTML = appState.grupos.map(g => `<option value="${g}">${g}</option>`).join('');
+    if (selInd) {
+      const valorAtual = selInd.value;
+      selInd.innerHTML = appState.grupos.map(g => `<option value="${g}">${g}</option>`).join('');
+      if (valorAtual && appState.grupos.includes(valorAtual)) selInd.value = valorAtual;
+    }
   }
 
   window.switchMestreTab = function(tab) {
@@ -1222,38 +1232,106 @@
     }
   };
 
-  // TIMER INDIVIDUAL DE RESPOSTA / PITCH POR EQUIPE
-  let timerGroup, groupTime = 180;
+  // TIMER INDIVIDUAL DE RESPOSTA / PITCH POR EQUIPE (COM SALVAMENTO AUTOMÁTICO AO PAUSAR/MUDAR)
+  let timerGroup = null;
+  let duracaoInicialMax = 180; // Padrão 3 min
+  let segundosGastosAtual = 0;
+  let grupoSelecionadoAnterior = '';
+
   window.resetGroupTimerDuration = function() {
-    groupTime = parseInt(document.getElementById('duracao-pitch-input').value);
+    duracaoInicialMax = parseInt(document.getElementById('duracao-pitch-input').value);
     window.pauseGroupTimer();
+    segundosGastosAtual = 0;
     updateGroupTimerDisplay();
+    atualizarStatusTextoGrupo();
   };
 
-  function updateGroupTimerDisplay() {
-    const m = Math.floor(groupTime / 60), s = groupTime % 60;
-    const el = document.getElementById('display-group-timer');
-    if (el) el.innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+  function formatarTempoMMSS(segundosTotais) {
+    const m = Math.floor(segundosTotais / 60);
+    const s = segundosTotais % 60;
+    return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
   }
+
+  function updateGroupTimerDisplay() {
+    const tempoRestante = Math.max(0, duracaoInicialMax - segundosGastosAtual);
+    const el = document.getElementById('display-group-timer');
+    if (el) el.innerText = formatarTempoMMSS(tempoRestante);
+  }
+
+  function atualizarStatusTextoGrupo() {
+    const grupoSel = document.getElementById('select-grupo-timer-individual')?.value || '';
+    const statusEl = document.getElementById('status-tempo-equipe-atual');
+    if (statusEl && grupoSel) {
+      const registrado = appState.temposPitchEquipes?.[grupoSel];
+      if (registrado !== undefined) {
+        statusEl.innerHTML = `<span style="color:var(--success);">✔ Tempo Registrado: ${formatarTempoMMSS(registrado)}</span>`;
+      } else {
+        statusEl.innerHTML = `<span style="color:var(--text-secondary);">Ainda não cronometrado nesta rodada.</span>`;
+      }
+    }
+  }
+
+  window.mudarGrupoPitch = function() {
+    const grupoNovo = document.getElementById('select-grupo-timer-individual').value;
+    // Se mudou de equipe e havia contagem, salva a anterior antes de resetar para a nova
+    if (timerGroup) {
+      clearInterval(timerGroup);
+      timerGroup = null;
+    }
+    if (grupoSelecionadoAnterior && grupoSelecionadoAnterior !== grupoNovo) {
+      if (segundosGastosAtual > 0) {
+        if (!appState.temposPitchEquipes) appState.temposPitchEquipes = {};
+        appState.temposPitchEquipes[grupoSelecionadoAnterior] = segundosGastosAtual;
+        guardarEstado();
+      }
+    }
+    grupoSelecionadoAnterior = grupoNovo;
+    segundosGastosAtual = 0;
+    duracaoInicialMax = parseInt(document.getElementById('duracao-pitch-input').value);
+    updateGroupTimerDisplay();
+    atualizarStatusTextoGrupo();
+  };
 
   window.startGroupTimer = function() {
     const grupoSel = document.getElementById('select-grupo-timer-individual').value;
+    grupoSelecionadoAnterior = grupoSel;
     if (!timerGroup) {
       timerGroup = setInterval(() => {
-        if (groupTime > 0) {
-          groupTime--;
+        if (segundosGastosAtual < duracaoInicialMax) {
+          segundosGastosAtual++;
           updateGroupTimerDisplay();
         } else {
           clearInterval(timerGroup);
           timerGroup = null;
-          alert(`⏰ O tempo de apresentação/resposta da ${grupoSel} esgotou!`);
+          alert(`⏰ O tempo limite de apresentação/pitch da ${grupoSel} esgotou!`);
         }
       }, 1000);
     }
   };
 
-  window.pauseGroupTimer = function() { clearInterval(timerGroup); timerGroup = null; };
-  window.resetGroupTimer = function() { window.pauseGroupTimer(); window.resetGroupTimerDuration(); };
+  window.pausarEfetuarRegistroPitch = function() {
+    if (timerGroup) {
+      clearInterval(timerGroup);
+      timerGroup = null;
+    }
+    const grupoSel = document.getElementById('select-grupo-timer-individual').value;
+    if (grupoSel) {
+      if (!appState.temposPitchEquipes) appState.temposPitchEquipes = {};
+      appState.temposPitchEquipes[grupoSel] = segundosGastosAtual;
+      guardarEstado();
+      atualizarStatusTextoGrupo();
+      alert(`⏱️ Tempo de ${formatarTempoMMSS(segundosGastosAtual)} da ${grupoSel} guardado com sucesso no histórico da rodada!`);
+    }
+  };
+
+  window.resetGroupTimer = function() {
+    if (timerGroup) {
+      clearInterval(timerGroup);
+      timerGroup = null;
+    }
+    segundosGastosAtual = 0;
+    updateGroupTimerDisplay();
+  };
 
   // RANKING
   window.carregarPontuacaoGrupo = function() {
