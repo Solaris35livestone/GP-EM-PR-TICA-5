@@ -146,7 +146,7 @@
         </div>
         <div class="card">
           <h3 class="title" style="font-size:1.1rem;">Controle da Rodada &amp; Cartas</h3>
-          <p class="subtitle">Sorteia novas crises, reinicia a rodada ou limpa o histórico de cartas.</p>
+          <p class="subtitle">&nbsp;.</p>
           <div style="display:flex; flex-direction:column; gap:10px;">
             <button class="btn" onclick="sortearCartas()">Sortear Cartas de Crise</button>
             <button class="btn btn-danger" onclick="reiniciarRodada()">🔄 Reiniciar Rodada</button>
@@ -167,7 +167,7 @@
 
       <div class="card">
         <h3 class="title" style="font-size:1.1rem;">Decisões &amp; Avaliação em Tempo Real</h3>
-        <p class="subtitle">Análise do Gabarito Pedagógico.</p>
+        <p class="subtitle">&nbsp;.</p>
         <div id="container-mestre-decisoes-detalhadas"></div>
       </div>
     </div>
@@ -183,13 +183,13 @@
           </div>
           <div class="form-group">
             <label for="texto-msg">Orientação Técnica / Regra Extra:</label>
-            <textarea id="texto-msg" rows="3" placeholder="Digite as orientações para o grupo ou toda a turma..."></textarea>
+            <textarea id="texto-msg" rows="3" placeholder="&nbsp;"></textarea>
           </div>
           <button class="btn" onclick="enviarMensagemMestre()">Enviar Comunicado</button>
         </div>
         <div class="card">
           <h3 class="title" style="font-size:1.1rem;">Histórico &amp; Exclusão de Avisos Enviados</h3>
-          <p class="subtitle">Exclua avisos gerais ou mensagens individuais enviadas por engano.</p>
+          <p class="subtitle">&nbsp;</p>
           <div id="container-gerenciar-mensagens-mestre" style="max-height: 350px; overflow-y: auto;">
             <p class="subtitle">Nenhum comunicado enviado.</p>
           </div>
@@ -215,14 +215,14 @@
           <div class="btn-group" style="justify-content:center;">
             <button class="btn" onclick="startMasterTimer()">Iniciar</button>
             <button class="btn btn-sec" onclick="pauseMasterTimer()">Pausar</button>
-            <button class="btn btn-danger" onclick="resetMasterTimer()">🛑 Encerrar &amp; Travar Envios</button>
+            <button class="btn btn-danger" onclick="resetMasterTimer()">🛑 Encerrar</button>
           </div>
         </div>
 
-        <!-- CRONÔMETRO DE PITCH (PADRÃO 5 MINUTOS FIXOS) -->
+        <!-- CRONÔMETRO DE PITCH -->
         <div class="card">
           <h3 class="title" style="font-size:1.1rem;">⏱️ Cronômetro de Pitch</h3>
-          <p class="subtitle">O tempo gasto é impacta na nota de ajuste do pitch.</p>
+          <p class="subtitle">&nbsp;.</p>
           
           <div class="form-group">
             <label for="select-grupo-timer-individual">Selecione a Equipe:</label>
@@ -246,7 +246,7 @@
       <div class="grid">
         <div class="card">
           <h3 class="title" style="font-size:1.1rem;">Nota do Pitch</h3>
-          <p class="subtitle">Calculado com base na agilidade (tempo de pitch) e qualidade da resposta (avaliação do Mestre).</p>
+          <p class="subtitle">&nbsp;</p>
           
           <div class="form-group">
             <label for="select-grupo-eval">Equipe:</label>
@@ -286,7 +286,7 @@
       <!-- ANÁLISE DE TENDÊNCIAS / HISTÓRICO DE RODADAS -->
       <div class="card" style="margin-top: 16px;">
         <h3 class="title" style="font-size:1.1rem;">📈 Análise de Tendências, Cartas &amp; Tempos de Pitch</h3>
-        <p class="subtitle">Evolução de pontuações, cartas de crise e o tempo de apresentação.</p>
+        <p class="subtitle">&nbsp;</p>
         <div id="container-historico-tendencias" style="overflow-x: auto;">
           <p class="subtitle">Nenhuma rodada salva no histórico ainda.</p>
         </div>
@@ -348,7 +348,7 @@
           </div>
 
           <div class="form-group">
-            <label for="decisao-justificativa-pitch">Síntese do Argumento para o Pitch (5 min):</label>
+            <label for="decisao-justificativa-pitch">Síntese do Argumento para o Pitch:</label>
             <textarea id="decisao-justificativa-pitch" rows="3" placeholder="Resuma em poucas palavras a lógica da sua equipe..."></textarea>
           </div>
 
@@ -357,11 +357,11 @@
       </div>
     </div>
 
-    <!-- ABA DE HISTÓRICO DURÁVEL DA EQUIPE (COM BOTÃO DE APAGAR INDIVIDUAL) -->
+    <!-- ABA DE HISTÓRICO DURÁVEL DA EQUIPE -->
     <div id="grupo-tab-content-historico" class="grupo-tab-pane" style="display:none;">
       <div class="card">
         <h3 class="title" style="font-size:1.1rem;">📜 Histórico de Decisões &amp; Resumo para o Pitch</h3>
-        <p class="subtitle">Consulte aqui as decisões estratégicas que sua equipe submeteu. Este registro permanece guardado para apoio nas apresentações (Pitches), podendo ser apagado individualmente se necessário.</p>
+        <p class="subtitle">Consulte aqui as decisões estratégicas que sua equipe submeteu.</p>
         <div id="container-historico-pessoal-grupo">
           <p class="subtitle">Nenhuma decisão submetida ou registrada ainda.</p>
         </div>
