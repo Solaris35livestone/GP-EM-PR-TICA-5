@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>RH NA VIDA REAL - RPG de Gestão</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-main: #f8fafc; --surface: #ffffff; --text-primary: #0f172a;
+      --text-secondary: #475569; --border: #e2e8f0; --brand: #2563eb;
+      --brand-hover: #1d4ed8; --success: #10b981; --warning: #f59e0b;
+      --danger: #ef4444; --radius: 10px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { background-color: var(--bg-main); color: var(--text-primary); padding: 12px; line-height: 1.5; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .title { font-size: 1.3rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+    .subtitle { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 14px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary); }
+    input, select, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.9rem; background: #fff; }
+    .btn { background: var(--brand); color: white; border: none; padding: 10px 16px; border-radius: var(--radius); font-weight: 600; cursor: pointer; transition: background 0.2s; display: inline-block; text-align: center; }
+    .btn:hover { background: var(--brand-hover); }
+    .btn-sec { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
+    .btn-sec:hover { border-color: var(--text-secondary); background: #f1f5f9; }
+    .btn-danger { background: var(--danger); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+    .badge-success { background: #dcfce7; color: #166534; }
+    .badge-warning { background: #fef3c7; color: #92400e; }
+    .badge-danger { background: #fee2e2; color: #991b1b; }
+    .timer { font-size: 2rem; font-weight: 700; color: var(--brand); text-align: center; margin: 10px 0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.825rem; }
+    th, td { border: 1px solid var(--border); padding: 8px; text-align: left; }
+    th { background: #f8fafc; font-weight: 600; }
+    .crisis-card { background: #fffbeb; border: 1px solid #fef3c7; border-left: 6px solid var(--warning); padding: 14px; border-radius: var(--radius); margin-top: 10px; }
+    .crisis-icon { font-size: 2.2rem; text-align: center; margin-bottom: 6px; }
+    .nav-tabs { display: flex; gap: 6px; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; flex-wrap: wrap; }
+    .tab-btn { background: none; border: none; padding: 8px 12px; font-weight: 600; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer; border-radius: var(--radius); }
+    .tab-btn.active { background: var(--brand); color: white; }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .home-hero { text-align: center; padding: 30px 15px; }
+    .home-btns { display: flex; gap: 12px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+    .btn-lg { padding: 14px 24px; font-size: 1rem; border-radius: var(--radius); width: 100%; max-width: 320px; }
+    .box-aviso { background: #eff6ff; border: 1px solid #bfdbfe; border-left: 6px solid var(--brand); border-radius: var(--radius); padding: 14px; margin-bottom: 14px; }
+    .box-alerta-consultoria { background: #fef2f2; border: 1px solid #fecaca; border-left: 6px solid var(--danger); padding: 12px; border-radius: 8px; margin-bottom: 14px; }
+    .q-box { background: #ffffff; border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-top: 8px; }
+    .pts-badge { background: #e0e7ff; color: #3730a3; font-weight: 700; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; display: inline-block; }
+    .opt-card { border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 8px; background: #f8fafc; cursor: pointer; display: flex; align-items: flex-start; gap: 10px; }
+    .opt-card:hover { border-color: var(--brand); background: #f0f7ff; }
+    .opt-card input { width: auto; margin-top: 3px; }
+  </style>
+
+  <!-- FIREBASE COM TRATAMENTO DE ERRO MÓVEL -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAh3_8wJRw_EdNNjlTu9oL2cVJ9IWCwZZw",
+      authDomain: "gp-em-pratica-5.firebaseapp.com",
+      databaseURL: "https://gp-em-pratica-5-default-rtdb.firebaseio.com/",
+      projectId: "gp-em-pratica-5",
+      storageBucket: "gp-em-pratica-5.firebasestorage.app",
+      messagingSenderId: "613982884672",
+      appId: "1:613982884672:web:4d665194273c730233e0a5"
+    };
+
+    try {
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+      window.db = db;
+      window.rtdbRef = ref;
+      window.rtdbSet = set;
+      window.rtdbOnValue = onValue;
+      window.firebasePronto = true;
+      if (window.iniciarAplicacao) window.iniciarAplicacao();
+    } catch (err) {
+      console.error("Erro ao carregar Firebase:", err);
+      alert("Erro ao ligar à base de dados. Verifique a ligação à internet.");
+    }
+  </script>
+</head>
+<body>
+<div class="container">
+  
+  <!-- TELA INICIAL -->
+  <div id="screen-home" class="screen active card home-hero">
+    <h1 class="title" style="font-size:1.8rem;">RH na Real</h1>
+    <p class="subtitle" style="font-size:1rem;">O Jogo de Tabuleiro Humano / RPG de Gestão (UFAM)</p>
+    <div class="home-btns">
+      <button class="btn btn-lg" onclick="tentarEntrarMestre()">Entrada do Mestre / Banca RH</button>
+      <button class="btn btn-lg btn-sec" onclick="mudarTela('screen-grupo-login')">Entrada das Equipes</button>
+    </div>
+  </div>
+
+  <!-- TELA LOGIN DE GRUPOS -->
+  <div id="screen-grupo-login" class="screen card">
+    <button class="btn btn-sec" onclick="mudarTela('screen-home')" style="margin-bottom:14px;">&larr; Voltar</button>
+    <h2 class="title">Acesso da Equipe de Gestão</h2>
+    <div class="form-group" style="max-width:400px;">
+      <label for="select-grupo-login">Selecione a sua Equipe:</label>
+      <select id="select-grupo-login"></select>
+    </div>
+    <button class="btn" onclick="entrarComoGrupo()">Acessar Painel da Equipe</button>
+  </div>
+
+  <!-- PAINEL DO MESTRE / RH -->
+  <div id="screen-mestre" class="screen">
+    <div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div>
+        <h2 class="title">Mesa do Mestre / Banca RH</h2>
+        <p class="subtitle" style="margin:0;">Mediação Técnica e Avaliação da Partida</p>
+      </div>
+      <button class="btn btn-sec" onclick="mudarTela('screen-home')">Sair</button>
+    </div>
+
+    <div class="nav-tabs">
+      <button id="tab-btn-mestre-setup" class="tab-btn active" onclick="switchMestreTab('mestre-setup')">1. Sorteio &amp; Rodada</button>
+      <button id="tab-btn-mestre-decisoes" class="tab-btn" onclick="switchMestreTab('mestre-decisoes')">2. Decisões &amp; Alertas</button>
+      <button id="tab-btn-mestre-comunicados" class="tab-btn" onclick="switchMestreTab('mestre-comunicados')">3. Comunicados</button>
+      <button id="tab-btn-mestre-timer" class="tab-btn" onclick="switchMestreTab('mestre-timer')">4. Tempo</button>
+      <button id="tab-btn-mestre-ranking" class="tab-btn" onclick="switchMestreTab('mestre-ranking')">5. Placar Final &amp; Análise</button>
+    </div>
+
+    <!-- TAB 1: CADASTRO E SORTEIO -->
+    <div id="mestre-setup" class="mestre-tab-content">
+      <div class="grid">
+        <div class="card">
+          <h3 class="title" style="font-size:1.1rem;">Equipes de Gestão</h3>
+          <div class="form-group">
+            <label for="num-grupos">Quantidade de Equipes (3 a 6):</label>
+            <select id="num-grupos" onchange="alterarQuantidadeGrupos()">
+              <option value="3">3 Equipes</option>
+              <option value="4" selected>4 Equipes</option>
+              <option value="5">5 Equipes</option>
+              <option value="6">6 Equipes</option>
+            </select>
+          </div>
+          <div id="container-inputs-grupos"></div>
+          <button class="btn" onclick="salvarGrupos()">Salvar Equipes</button>
+        </div>
+        <div class="card">
+          <h3 class="title" style="font-size:1.1rem;">Controle da Rodada &amp; Cartas</h3>
+          <p class="subtitle">Sorteia novas crises, reinicia a rodada ou limpa a memória de cartas usadas.</p>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <button class="btn" onclick="sortearCartas()">Sortear Cartas de Crise</button>
+            <button class="btn btn-danger" onclick="reiniciarRodada()">🔄 Reiniciar Rodada</button>
+            <button class="btn btn-sec" onclick="limparHistoricoCartasApenas()" style="border-color: var(--danger); color: var(--danger);">🗑️ Limpar Histórico de Cartas</button>
+          </div>
+          <div id="resultado-sorteio-mestre" style="margin-top:12px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: DECISÕES E ALERTAS DE CONSULTORIA -->
+    <div id="mestre-decisoes" class="mestre-tab-content" style="display:none;">
+      <!-- ALERTA DE CONSULTORIA COM BOTÃO DE TRAVA INTEGRADO -->
+      <div id="alerta-consultoria-mestre" style="display:none;" class="box-alerta-consultoria">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+          <h3 class="title" style="font-size:1.05rem; color:var(--danger); margin:0;">🚨 Consultoria Solicitada!</h3>
+          <button id="btn-toggle-trava-notif" class="btn" onclick="toggleTravaConsultoria()" style="font-size: 0.8rem; padding: 6px 12px;"></button>
+        </div>
+        <div id="lista-alertas-consultoria" style="font-size:0.9rem;"></div>
+      </div>
+
+      <div class="card">
+        <h3 class="title" style="font-size:1.1rem;">Decisões &amp; Avaliação Automática em Tempo Real</h3>
+        <p class="subtitle">Análise do Gabarito Pedagógico.</p>
+        <div id="container-mestre-decisoes-detalhadas"></div>
+      </div>
+    </div>
+
+    <!-- TAB 3: GERENCIAR COMUNICADOS -->
+    <div id="mestre-comunicados" class="mestre-tab-content" style="display:none;">
+      <div class="grid">
+        <div class="card">
+          <h3 class="title" style="font-size:1.1rem;">Enviar Orientação / Aviso</h3>
+          <div class="form-group">
+            <label for="select-destinatario-msg">Destinatário:</label>
+            <select id="select-destinatario-msg"></select>
+          </div>
+          <div class="form-group">
+            <label for="texto-msg">Orientação Técnica / Regra Extra:</label>
+            <textarea id="texto-msg" rows="3" placeholder="Digite as orientações para o grupo ou toda a turma..."></textarea>
+          </div>
+          <button class="btn" onclick="enviarMensagemMestre()">Enviar Comunicado</button>
+        </div>
+        <div class="card">
+          <h3 class="title" style="font-size:1.1rem;">Histórico &amp; Exclusão de Avisos Enviados</h3>
+          <p class="subtitle">Exclua avisos gerais ou mensagens individuais enviadas por engano.</p>
+          <div id="container-gerenciar-mensagens-mestre" style="max-height: 350px; overflow-y: auto;">
+            <p class="subtitle">Nenhum comunicado enviado.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: CRONÔMETROS -->
+    <div id="mestre-timer" class="mestre-tab-content" style="display:none;">
+      <div class="card">
+        <h3 class="title" style="font-size:1.1rem;">Cronômetro do Jogo</h3>
+        <div class="form-group">
+          <select id="stage-timer-select" onchange="setMasterTimerStage()">
+            <option value="600">Etapa 1: Setup (10 min)</option>
+            <option value="300">Etapa 2: Distribuição de Crises (5 min)</option>
+            <option value="1200">Etapa 3: Deliberação (20 min)</option>
+            <option value="1500">Etapa 4: Pitches (25 min)</option>
+            <option value="900">Etapa 5: Debriefing (15 min)</option>
+          </select>
+        </div>
+        <div class="timer" id="display-master-timer">10:00</div>
+        <div class="btn-group" style="justify-content:center;">
+          <button class="btn" onclick="startMasterTimer()">Iniciar</button>
+          <button class="btn btn-sec" onclick="pauseMasterTimer()">Pausar</button>
+          <button class="btn btn-sec" onclick="resetMasterTimer()">Resetar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: AVALIAÇÃO DA BANCA E ANÁLISE DE TENDÊNCIAS -->
+    <div id="mestre-ranking" class="mestre-tab-content" style="display:none;">
+      <div class="grid">
+        <div class="card">
+          <h3 class="title" style="font-size:1.1rem;">Ajuste de Nota do Pitch (0-20 pts)</h3>
+          <div class="form-group">
+            <label for="select-grupo-eval">Equipe:</label>
+            <select id="select-grupo-eval" onchange="carregarPontuacaoGrupo()"></select>
+          </div>
+          <div class="form-group">
+            <label>Nota da Apresentação / Pitch (Até 20 pts):</label>
+            <input type="number" id="pilar-pitch" min="0" max="20" value="15" oninput="calcMediaRanking()">
+          </div>
+          <p style="font-size:0.85rem; color:var(--text-secondary);">Fundamentação Técnica e Viabilidade calculadas automaticamente pela escolha estruturada.</p>
+          <p style="text-align:center; font-weight:700; margin:10px 0;">Total Automático: <span id="display-nota-final" style="color:var(--brand);">0</span> / 100 pts</p>
+          <button class="btn" style="width:100%;" onclick="salvarPontuacaoGrupo()">Salvar Ajuste do Pitch</button>
+        </div>
+        <div class="card">
+          <h3 class="title" style="font-size:1.1rem;">Placar Geral Automático</h3>
+          <table>
+            <thead>
+              <tr><th>Pos.</th><th>Equipe</th><th>Automática</th><th>Pitch</th><th>Total</th></tr>
+            </thead>
+            <tbody id="tbody-ranking"></tbody>
+          </table>
+          <div style="margin-top: 14px; display: flex; gap: 8px;">
+            <button class="btn" style="flex: 1;" onclick="salvarRodadaNoHistorico()">💾 Salvar Rodada Atual no Histórico</button>
+            <button class="btn btn-danger" onclick="limparHistoricoRodadas()">🗑️ Limpar Histórico de Rodadas</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ANÁLISE DE TENDÊNCIAS / HISTÓRICO DE RODADAS COM CARTAS -->
+      <div class="card" style="margin-top: 16px;">
+        <h3 class="title" style="font-size:1.1rem;">📈 Análise de Tendências &amp; Cartas Utilizadas</h3>
+        <p class="subtitle">Acompanhe a evolução de pontuações e quais cartas de crise.</p>
+        <div id="container-historico-tendencias" style="overflow-x: auto;">
+          <p class="subtitle">Nenhuma rodada salva no histórico ainda.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAINEL DA EQUIPE -->
+  <div id="screen-grupo" class="screen">
+    <div class="card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div>
+        <h2 class="title" id="grupo-header-nome">Painel da Equipe</h2>
+        <span class="pts-badge" id="display-saldo-orçamento">Orçamento: 100 pts</span>
+      </div>
+      <button class="btn btn-sec" onclick="mudarTela('screen-grupo-login')">Trocar Equipe</button>
+    </div>
+
+    <div class="nav-tabs">
+      <button id="tab-grupo-decisao" class="tab-btn active" onclick="switchGrupoTab('decisao')">⚡ Resolução Estruturada</button>
+      <button id="tab-grupo-orientacoes" class="tab-btn" onclick="switchGrupoTab('orientacoes')">📢 Comunicados</button>
+    </div>
+
+    <div id="grupo-tab-content-decisao" class="grupo-tab-pane">
+      <div id="box-avisos-mestre" style="display:none;" class="box-aviso">
+        <h3 class="title" style="font-size:1rem; color:var(--brand);">📢 Comunicado da Banca</h3>
+        <p id="texto-aviso-mestre" style="font-size:0.9rem;"></p>
+      </div>
+
+      <div class="grid">
+        <div>
+          <div class="card">
+            <h3 class="title" style="font-size:1.1rem;">Carta de Crise Designada</h3>
+            <div id="container-carta-grupo">
+              <p class="subtitle">Aguardando sorteio do Mestre...</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="title" style="font-size:1.1rem;">Consultoria Técnica (-5 pts cada)</h3>
+            <p class="subtitle">Especialistas disponíveis para este cenário:</p>
+            <div id="container-consultores-grupo" class="btn-group"></div>
+            <div id="historico-consultas-grupo" style="margin-top:10px; font-size:0.8rem;"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="title" style="font-size:1.1rem;">Tomada de Decisão Estratégica</h3>
+          <p class="subtitle">Selecione as opções táticas que sua equipe adotará para o cenário de crise.</p>
+
+          <div class="form-group">
+            <label id="lbl-q1">1. Decisão Tática Imediata:</label>
+            <div id="opts-q1"></div>
+          </div>
+
+          <div class="form-group">
+            <label id="lbl-q2">2. Política e Reformulação Estrutural:</label>
+            <div id="opts-q2"></div>
+          </div>
+
+          <div class="form-group">
+            <label for="decisao-justificativa-pitch">Síntese do Argumento para o Pitch (3 min):</label>
+            <textarea id="decisao-justificativa-pitch" rows="3" placeholder="Resuma em poucas palavras a lógica da sua equipe..."></textarea>
+          </div>
+
+          <button class="btn" style="width:100%;" onclick="enviarDecisaoGrupo()">Submeter Decisão para Avaliação</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="grupo-tab-content-orientacoes" class="grupo-tab-pane" style="display:none;">
+      <div class="card">
+        <h3 class="title" style="font-size:1.1rem;">Feed de Orientações da Banca</h3>
+        <div id="container-orientacoes-tempo-real" style="margin-top:10px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const SENHA_MESTRE = "rh2026";
+
+  const CARTAS_CRISE = [
+    {
+      id: 'c1',
+      categoria: 'Equilíbrio Interno vs. Orçamento',
+      emoji: '💻',
+      titulo: 'Carta 01 — A Revolta dos Juniores',
+      setor: 'Tecnologia da Informação',
+      ameaca: 'Risco de demissão coletiva dos Plenos.',
+      desc: 'Novos Juniores foram contratados a R$ 5.500,00. No entanto, Plenos antigos que os treinam recebem R$ 5.200,00. A disparidade gerou uma crise interna.',
+      consultoresPermitidos: [
+        'Carlos (Equidade Interna)',
+        'Guilherme (Controller)'
+      ],
+      q1: 'Qual ação imediata deve ser tomada sem estourar a folha anual?',
+      opts1: [
+        { texto: 'Reequilibrar a faixa: Promover/ajustar os Plenos por alinhamento e corrigir o piso de entrada dos Juniores.', ptsFund: 40, ptsViab: 30, ideal: true },
+        { texto: 'Conceder aumento geral de 15% para toda a empresa para acalmar os ânimos.', ptsFund: 15, ptsViab: 10, ideal: false },
+        { texto: 'Ignorar as reclamações dos Plenos e manter os salários como estão.', ptsFund: 0, ptsViab: 0, ideal: false }
+      ],
+      q2: 'Como reformular a tabela salarial para impedir esta distorção?',
+      opts2: [
+        { texto: 'Fixar amplitude de faixas e teto rigoroso para recrutamento no piso do cargo.', ptsFund: 40, ptsViab: 30, ideal: true },
+        { texto: 'Criar bônus informal sem alterar a tabela salarial.', ptsFund: 10, ptsViab: 15, ideal: false }
+      ]
+    },
+    {
+      id: 'c2',
+      categoria: 'Equilíbrio Interno vs. Orçamento',
+      emoji: '🏭',
+      titulo: 'Carta 02 — O Efeito Cascata',
+      setor: 'Logística e Operações',
+      ameaca: 'Quebra na hierarquia e recusa de liderança.',
+      desc: 'Reajuste de 12% do sindicato fez Operadores I ganharem o mesmo que Supervisores de Operações.',
+      consultoresPermitidos: [
+        'Luiza (Trilha Carreira)',
+        'Ana Jully (Consultora Legal)'
+      ],
+      q1: 'Como reajustar a faixa salarial dos Supervisores sem estender 12% a toda a empresa?',
+      q2: 'Quais critérios não financeiros podem recompor a atratividade do cargo?',
+      opts1: [
+        { texto: 'Reestruturar o piso dos Supervisores com diferencial mínimo de 15% a 20% sobre subordinados.', ptsFund: 40, ptsViab: 30, ideal: true },
+        { texto: 'Repassar o reajuste linear de 12% a todos os cargos da empresa.', ptsFund: 10, ptsViab: 5, ideal: false }
+      ],
+      opts2: [
+        { texto: 'Oferecer aceleração de carreira, capacitação executiva e benefícios de gestão.', ptsFund: 40, ptsViab: 30, ideal: true },
+        { texto: 'Manter Supervisores sem benefícios adicionais.', ptsFund: 0, ptsViab: 0, ideal: false }
+      ]
+    },
+    {
+      id: 'c3',
+      categoria: 'Atração e Retenção',
+      emoji: '📊',
+      titulo: 'Carta 03 — Dança das Cadeiras',
+      setor: 'Serviços Financeiros / Fintech',
+      ameaca: 'Fuga de talentos críticos.',
+      desc: 'Concorrente ofereceu +40% de salário para Analistas de Riscos Seniores. Três já saíram.',
+      consultoresPermitidos: [
+        'Anna (Pesquisa Mercado)',
+        'Guilherme (Controller)'
+      ],
+      q1: 'A empresa deve cobrir a proposta para todos os restantes? Justifique.',
+      q2: 'Qual plano de retenção emergencial pode ser criado em 48h?',
+      opts1: [
+        { texto: 'Análise de Matriz Crítica: Cobrir proposta (match) apenas para talentos essenciais/chave.', ptsFund: 40, ptsViab: 30, ideal: true },
+        { texto: 'Dar contraproposta generalizada de +40% para 100% da equipe.', ptsFund: 15, ptsViab: 10, ideal: false },
+        { texto: 'Não cobrir nenhuma proposta e aceitar a perda dos especialistas.', ptsFund: 5, ptsViab: 0, ideal: false }
+      ],
+      opts2: [
+        { texto: 'Criar Bônus de Permanência (Retention Bonus) atrelado a metas de médio prazo e benefícios flexíveis.', ptsFund: 40, ptsViab: 30, ideal: true },
+        { texto: 'Oferecer apenas folga de aniversário.', ptsFund: 5, ptsViab: 5, ideal: false }
+      ]
+    },
+    {
+      id: 'c4',
+      categoria: 'Atração e Retenção',
+      emoji: '🏡',
+      titulo: 'Carta 04 — Dilema do Home Office',
+      setor: 'Marketing Digital',
+      ameaca: 'Demissão em massa (60% da equipa).',
+      desc: 'A diretoria exige trabalho 100% presencial, mas o mercado oferece vagas remotas/híbridas.',
+      consultoresPermitidos: [
+        'Ana Jully (Consultora Legal)',
+        'Anna (Pesquisa Mercado)'
+      ],
+      q1: 'Como mediar o impasse entre Diretoria e colaboradores?',
+      q2: 'Proponha um pacote de benefícios/flexibilidade que reduza o turnover.',
+      opts1: [
+        { texto: 'Negociar Modelo Híbrido baseado em entregas (ex: 2x presencial, 3x remoto) com dados de produtividade.', ptsFund: 40, ptsViab: 30, ideal: true },
+        { texto: 'Aceitar a imposição 100% presencial da Diretoria sem questionar.', ptsFund: 5, ptsViab: 0, ideal: false },
+        { texto: 'Liberar 100% remoto para todos sem autorização da governança.', ptsFund: 10, ptsViab: 5, ideal: false }
+      ],
+      opts2: [
+        { texto: 'Implementar Auxílio Home Office e Cartão de Benefícios Flexíveis.', ptsFund: 40, ptsViab: 30, ideal: true },
+        { texto: 'Não oferecer flexibilidade nem benefícios adicionais.', ptsFund: 0, ptsViab: 0, ideal: false }
+      ]
+    },
+    {
+      id: 'c5',
+      categoria: 'Negociação Sindical',
+      emoji: '⚖️',
+      titulo: 'Carta 05 — A Greve Iminente',
+      setor: 'Manufatura Eletrônica',
+      ameaca: 'Paralisação da fábrica.',
+      desc: 'Sindicato exige redução de jornada de 44h para 40h sem redução salarial.',
+      consultoresPermitidos: [
+        'Ana Jully (Consultora Legal)',
+        'Guilherme (Controller)'
+      ],
+      q1: 'Quais contrapropostas flexíveis (banco de horas, PLR) apresentar?',
+      q2: 'Como estruturar a comunicação interna para evitar o pânico?',
+      opts1: [
+        { texto: 'Troca estruturada: Redução gradual de jornada atrelada a metas de produtividade e Banco de Horas.', ptsFund: 40, ptsViab: 30, ideal: true },
+        { texto: 'Ceder totalmente às exigências do sindicato sem contrapartida operacional.', ptsFund: 10, ptsViab: 5, ideal: false },
+        { texto: 'Romper negociações com o sindicato.', ptsFund: 0, ptsViab: 0, ideal: false }
+      ],
+      opts2: [
+        { texto: 'Comunicação transparente com boletins informativos e diálogo constante com líderes.', ptsFund: 40, ptsViab: 30, ideal: true },
+        { texto: 'Manter sigilo absoluto e proibir conversas sobre a greve.', ptsFund: 5, ptsViab: 5, ideal: false }
+      ]
+    },
+    {
+      id: 'c6',
+      categoria: 'Negociação Sindical e CLT',
+      emoji: '💰',
+      titulo: 'Carta 06 — Bonificação Desgovernada',
+      setor: 'Comercial e Vendas',
+      ameaca: 'Passivo trabalhista e equiparação salarial.',
+      desc: 'Gerentes pagam comissões informais "por fora" para bater metas, gerando riscos legais.',
+      consultoresPermitidos: [
+        'Ana Jully (Consultora Legal)',
+        'Guilherme (Controller)'
+      ],
+      q1: 'Como regularizar as bonificações perante a CLT (Art. 457)?',
+      q2: 'Como desenhar uma política clara de Remuneração Variável?',
+      opts1: [
+        { texto: 'Anulação do pagamento informal e formalização imediata da política de Prêmios (Art. 457 da CLT).', ptsFund: 40, ptsViab: 30, ideal: true },
+        { texto: 'Manter o pagamento por fora ajustando apenas o valor verbalmente.', ptsFund: 0, ptsViab: 0, ideal: false },
+        { texto: 'Cortar todas as premiações bruscamente.', ptsFund: 10, ptsViab: 5, ideal: false }
+      ],
+      opts2: [
+        { texto: 'Regulamentar Padrões de Desempenho e estender metas bônus com regras claras.', ptsFund: 40, ptsViab: 30, ideal: true },
+        { texto: 'Deixar a critério informal de cada gerente regional.', ptsFund: 0, ptsViab: 0, ideal: false }
+      ]
+    }
+  ];
+
+  let appState = {
+    grupos: ['Equipe Alfa', 'Equipe Beta', 'Equipe Gamma', 'Equipe Delta'],
+    crises: {},
+    decisoes: {},
+    mensagens: [],
+    pontuacoes: {},
+    consultas: {},
+    historicoRodadas: [],
+    cartasSorteadasPorGrupo: {},
+    travaConsultoria: false,
+    grupoAtivo: '',
+    currentScreen: 'screen-home'
+  };
+
+  window.iniciarAplicacao = function() {
+    const estadoRef = window.rtdbRef(window.db, 'rh_na_real_v5_3/estado_jogo');
+    window.rtdbOnValue(estadoRef, (snapshot) => {
+      const dados = snapshot.val();
+      if (dados) {
+        appState = dados;
+        if (!Array.isArray(appState.mensagens)) appState.mensagens = [];
+        if (!appState.consultas) appState.consultas = {};
+        if (!Array.isArray(appState.historicoRodadas)) appState.historicoRodadas = [];
+        if (!appState.cartasSorteadasPorGrupo) appState.cartasSorteadasPorGrupo = {};
+        if (typeof appState.travaConsultoria === 'undefined') appState.travaConsultoria = false;
+        atualizarInterface();
+      } else {
+        guardarEstado();
+      }
+    });
+  };
+
+  function guardarEstado() {
+    if (window.db) {
+      const estadoRef = window.rtdbRef(window.db, 'rh_na_real_v5_3/estado_jogo');
+      window.rtdbSet(estadoRef, appState);
+    }
+  }
+
+  function atualizarInterface() {
+    updateSelects();
+    renderInputsGrupos();
+    
+    const active = document.querySelector('.screen.active');
+    if (active) {
+      if (active.id === 'screen-mestre') {
+        renderSorteioMestre();
+        renderMestreDecisoes();
+        renderAlertaConsultoriasMestre();
+        renderGerenciarMensagensMestre();
+        renderRanking();
+        renderHistoricoTendencias();
+      } else if (active.id === 'screen-grupo') {
+        renderPainelGrupo();
+        renderOrientacoes();
+      }
+    }
+  }
+
+  window.tentarEntrarMestre = function() {
+    const s = prompt("Senha do Mestre:");
+    if (s === SENHA_MESTRE) window.mudarTela('screen-mestre');
+    else if (s !== null) alert("Senha Incorreta!");
+  };
+
+  window.mudarTela = function(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const t = document.getElementById(id);
+    if (t) {
+      t.classList.add('active');
+      appState.currentScreen = id;
+      atualizarInterface();
+    }
+  };
+
+  function renderInputsGrupos() {
+    const numEl = document.getElementById('num-grupos');
+    if (!numEl) return;
+    const container = document.getElementById('container-inputs-grupos');
+    if (!container) return;
+    const num = parseInt(numEl.value);
+    container.innerHTML = '';
+    for (let i = 0; i < num; i++) {
+      const val = (appState.grupos && appState.grupos[i]) || `Equipe ${i+1}`;
+      container.innerHTML += `<div class="form-group"><input type="text" class="input-nome-grupo" value="${val}" onchange="atualizarNomeGrupo(${i}, this.value)"></div>`;
+    }
+  }
+
+  window.alterarQuantidadeGrupos = function() {
+    const num = parseInt(document.getElementById('num-grupos').value);
+    let novos = [];
+    for (let i = 0; i < num; i++) novos[i] = appState.grupos[i] || `Equipe ${i+1}`;
+    appState.grupos = novos;
+    guardarEstado();
+    renderInputsGrupos();
+  };
+
+  window.atualizarNomeGrupo = function(idx, val) {
+    appState.grupos[idx] = val.trim();
+    guardarEstado();
+  };
+
+  window.salvarGrupos = function() {
+    guardarEstado();
+    alert("Equipes guardadas com sucesso!");
+  };
+
+  window.reiniciarRodada = function() {
+    if (confirm("Tem certeza que deseja reiniciar a rodada? As decisões enviadas, histórico de consultorias e notas serão limpas (o histórico de cartas sorteadas é mantido).")) {
+      appState.decisoes = {};
+      appState.consultas = {};
+      appState.pontuacoes = {};
+      guardarEstado();
+      alert("Rodada reiniciada com sucesso! As equipes podem submeter novas decisões.");
+    }
+  };
+
+  window.limparHistoricoCartasApenas = function() {
+    if (confirm("Deseja apagar apenas o registo de cartas sorteadas pelas equipes? (Isso permitirá que as equipes possam receber novamente cartas que já haviam jogado anteriormente, mantendo intactos os placares e o histórico de rodadas).")) {
+      appState.cartasSorteadasPorGrupo = {};
+      guardarEstado();
+      alert("Histórico de cartas limpo com sucesso! As equipes agora podem receber qualquer carta do baralho novamente.");
+    }
+  };
+
+  // Função para alternar a trava diretamente pelo botão na notificação
+  window.toggleTravaConsultoria = function() {
+    appState.travaConsultoria = !appState.travaConsultoria;
+    guardarEstado();
+    renderAlertaConsultoriasMestre();
+  };
+
+  window.sortearCartas = function() {
+    appState.crises = {};
+    if (!appState.cartasSorteadasPorGrupo) appState.cartasSorteadasPorGrupo = {};
+
+    appState.grupos.forEach(g => {
+      if (!appState.cartasSorteadasPorGrupo[g]) {
+        appState.cartasSorteadasPorGrupo[g] = [];
+      }
+
+      const cartasDisponiveisParaGrupo = CARTAS_CRISE.filter(
+        c => !appState.cartasSorteadasPorGrupo[g].includes(c.id)
+      );
+
+      if (cartasDisponiveisParaGrupo.length === 0) {
+        appState.crises[g] = { id: 'esgotado', titulo: "Todas as crises esgotadas para este grupo!", emoji: "🎉", ameaca: "Sem crises pendentes", desc: "Este grupo já resolveu todas as cartas do baralho." };
+        return;
+      }
+
+      const idx = Math.floor(Math.random() * cartasDisponiveisParaGrupo.length);
+      const cartaEscolhida = cartasDisponiveisParaGrupo[idx];
+
+      appState.cartasSorteadasPorGrupo[g].push(cartaEscolhida.id);
+      appState.crises[g] = cartaEscolhida;
+    });
+
+    guardarEstado();
+    renderSorteioMestre();
+    alert("Novas cartas de crise sorteadas (garantindo que nenhuma equipe repita cartas anteriores)!");
+  };
+
+  window.salvarRodadaNoHistorico = function() {
+    if (!appState.historicoRodadas) appState.historicoRodadas = [];
+    const numeroRodada = appState.historicoRodadas.length + 1;
+    const dadosRodada = {
+      rodada: numeroRodada,
+      hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
+      placar: {},
+      cartasRodada: {}
+    };
+
+    appState.grupos.forEach(g => {
+      const p = (appState.pontuacoes && appState.pontuacoes[g]) || { fund: 0, viab: 0, pitch: 0, saldo: 0, total: 0 };
+      dadosRodada.placar[g] = { ...p };
+      
+      const criseEquipe = appState.crises && appState.crises[g];
+      dadosRodada.cartasRodada[g] = criseEquipe ? criseEquipe.titulo : 'Nenhuma carta';
+    });
+
+    appState.historicoRodadas.push(dadosRodada);
+    guardarEstado();
+    renderHistoricoTendencias();
+    alert(`Rodada ${numeroRodada} salva com sucesso no histórico de tendências!`);
+  };
+
+  window.limparHistoricoRodadas = function() {
+    if (confirm("Deseja apagar todo o histórico de rodadas salvo?")) {
+      appState.historicoRodadas = [];
+      guardarEstado();
+      renderHistoricoTendencias();
+      alert("Histórico de rodadas limpo!");
+    }
+  };
+
+  function renderHistoricoTendencias() {
+    const container = document.getElementById('container-historico-tendencias');
+    if (!container) return;
+    const historico = appState.historicoRodadas || [];
+    if (historico.length === 0) {
+      container.innerHTML = '<p class="subtitle">Nenhuma rodada salva no histórico ainda.</p>';
+      return;
+    }
+
+    let html = `<table><thead><tr><th>Rodada / Hora</th>`;
+    appState.grupos.forEach(g => { html += `<th>${g} (Placar / Carta)</th>`; });
+    html += `</tr></thead><tbody>`;
+
+    historico.forEach(h => {
+      html += `<tr><td><strong>Rodada ${h.rodada}</strong><br><small>${h.hora}</small></td>`;
+      appState.grupos.forEach(g => {
+        const pts = h.placar[g]?.total || 0;
+        const cartaUsada = h.cartasRodada?.[g] || 'N/A';
+        html += `<td><strong>${pts} pts</strong><br><small style="color:var(--text-secondary);">📄 ${cartaUsada}</small></td>`;
+      });
+      html += `</tr>`;
+    });
+
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+  }
+
+  function renderSorteioMestre() {
+    const el = document.getElementById('resultado-sorteio-mestre');
+    if (!el) return;
+    let html = '';
+    appState.grupos.forEach(g => {
+      const c = appState.crises[g];
+      if (c) html += `<div style="padding:6px; background:#fff; border:1px solid #e2e8f0; margin-bottom:4px; font-size:0.85rem;"><strong>${g}:</strong> ${c.emoji || '📌'} ${c.titulo}</div>`;
+    });
+    el.innerHTML = html || '<p class="subtitle">Aguardando sorteio...</p>';
+  }
+
+  function updateSelects() {
+    const selL = document.getElementById('select-grupo-login');
+    const selM = document.getElementById('select-destinatario-msg');
+    const selE = document.getElementById('select-grupo-eval');
+    if (selL) selL.innerHTML = appState.grupos.map(g => `<option value="${g}">${g}</option>`).join('');
+    if (selM) selM.innerHTML = '<option value="TODOS">Todas as Equipes (Aviso Geral)</option>' + appState.grupos.map(g => `<option value="${g}">${g}</option>`).join('');
+    if (selE) selE.innerHTML = appState.grupos.map(g => `<option value="${g}">${g}</option>`).join('');
+  }
+
+  window.switchMestreTab = function(tab) {
+    document.querySelectorAll('.mestre-tab-content').forEach(c => c.style.display = 'none');
+    document.querySelectorAll('.nav-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+    const t = document.getElementById(tab);
+    if (t) t.style.display = 'block';
+    const b = document.getElementById(`tab-btn-${tab}`);
+    if (b) b.classList.add('active');
+  };
+
+  window.switchGrupoTab = function(tab) {
+    document.querySelectorAll('.grupo-tab-pane').forEach(p => p.style.display = 'none');
+    document.getElementById('tab-grupo-decisao').classList.remove('active');
+    document.getElementById('tab-grupo-orientacoes').classList.remove('active');
+    if (tab === 'decisao') {
+      document.getElementById('grupo-tab-content-decisao').style.display = 'block';
+      document.getElementById('tab-grupo-decisao').classList.add('active');
+    } else {
+      document.getElementById('grupo-tab-content-orientacoes').style.display = 'block';
+      document.getElementById('tab-grupo-orientacoes').classList.add('active');
+    }
+  };
+
+  window.entrarComoGrupo = function() {
+    const g = document.getElementById('select-grupo-login').value;
+    if (!g) return;
+    appState.grupoAtivo = g;
+    guardarEstado();
+    document.getElementById('grupo-header-nome').innerText = `Painel: ${g}`;
+    window.switchGrupoTab('decisao');
+    window.mudarTela('screen-grupo');
+  };
+
+  function renderPainelGrupo() {
+    const g = appState.grupoAtivo;
+    if (!g) return;
+    const cLista = (appState.consultas && appState.consultas[g]) || [];
+    const saldo = Math.max(0, 100 - (cLista.length * 5));
+    document.getElementById('display-saldo-orçamento').innerText = `Orçamento: ${saldo} pts`;
+
+    const c = appState.crises[g];
+    const container = document.getElementById('container-carta-grupo');
+    const containerConsultores = document.getElementById('container-consultores-grupo');
+
+    if (container) {
+      if (c && c.opts1) {
+        container.innerHTML = `
+          <div class="crisis-card">
+            <div class="crisis-icon">${c.emoji}</div>
+            <h4 style="text-align:center;">${c.titulo}</h4>
+            <p style="font-size:0.85rem; color:var(--danger); text-align:center;">${c.ameaca}</p>
+            <p style="font-size:0.85rem; margin-top:8px;">${c.desc}</p>
+          </div>`;
+        
+        document.getElementById('lbl-q1').innerText = `1. ${c.q1}`;
+        document.getElementById('lbl-q2').innerText = `2. ${c.q2}`;
+
+        if (containerConsultores && c.consultoresPermitidos) {
+          containerConsultores.innerHTML = c.consultoresPermitidos.map(esp => `
+            <button class="btn btn-sec" onclick="registrarConsultoria('${esp}')">Consultar ${esp}</button>
+          `).join('');
+        }
+
+        const containerOpts1 = document.getElementById('opts-q1');
+        const containerOpts2 = document.getElementById('opts-q2');
+        
+        if (containerOpts1 && c.opts1) {
+          containerOpts1.innerHTML = c.opts1.map((opt, i) => `
+            <label class="opt-card">
+              <input type="radio" name="opt_q1" value="${i}" ${i === 0 ? 'checked' : ''}>
+              <span style="font-size:0.85rem;">${opt.texto}</span>
+            </label>
+          `).join('');
+        }
+
+        if (containerOpts2 && c.opts2) {
+          containerOpts2.innerHTML = c.opts2.map((opt, i) => `
+            <label class="opt-card">
+              <input type="radio" name="opt_q2" value="${i}" ${i === 0 ? 'checked' : ''}>
+              <span style="font-size:0.85rem;">${opt.texto}</span>
+            </label>
+          `).join('');
+        }
+      } else {
+        container.innerHTML = `<div class="crisis-card"><p style="text-align:center; font-weight:700;">${c?.titulo || 'Aguardando sorteio do Mestre...'}</p><p style="text-align:center; font-size:0.85rem; margin-top:6px;">${c?.desc || ''}</p></div>`;
+        if (containerConsultores) containerConsultores.innerHTML = '<p class="subtitle">Nenhum consultor disponível até o sorteio.</p>';
+      }
+    }
+
+    const histContainer = document.getElementById('historico-consultas-grupo');
+    if (histContainer) {
+      if (cLista.length === 0) {
+        histContainer.innerHTML = 'Nenhuma consultoria solicitada.';
+      } else {
+        let htmlConsultas = '<strong>Consultas Solicitadas:</strong><br>';
+        cLista.forEach((item, idx) => {
+          htmlConsultas += `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px; background:#f1f5f9; padding:4px 8px; border-radius:4px;">
+              <span>• ${item.esp} (${item.hora})</span>`;
+              
+          if (appState.travaConsultoria) {
+            htmlConsultas += `<span class="badge badge-danger" style="font-size:0.65rem;">🔒 Travado pela Banca</span>`;
+          } else {
+            htmlConsultas += `<button onclick="estornarConsultoria(${idx})" class="btn-danger" style="padding:2px 6px; font-size:0.7rem;">Cancelar (-5pts)</button>`;
+          }
+
+          htmlConsultas += `</div>`;
+        });
+        histContainer.innerHTML = htmlConsultas;
+      }
+    }
+  }
+
+  window.registrarConsultoria = function(esp) {
+    const g = appState.grupoAtivo;
+    if (!g) return;
+    if (!appState.consultas) appState.consultas = {};
+    if (!appState.consultas[g]) appState.consultas[g] = [];
+    appState.consultas[g].push({ esp, hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) });
+    guardarEstado();
+    renderPainelGrupo();
+    alert(`Consultoria com ${esp} registrada (-5 pts). O Mestre foi alertado!`);
+  };
+
+  window.estornarConsultoria = function(index) {
+    if (appState.travaConsultoria) {
+      alert("Aviso: A trava de consultorias está ativa pela Banca. Não é permitido cancelar ou estornar pontos no momento.");
+      return;
+    }
+
+    const g = appState.grupoAtivo;
+    if (!g || !appState.consultas || !appState.consultas[g]) return;
+    if (confirm("Deseja cancelar esta consultoria e devolver 5 pontos ao saldo?")) {
+      appState.consultas[g].splice(index, 1);
+      guardarEstado();
+      renderPainelGrupo();
+      alert("Consultoria cancelada e 5 pontos estornados!");
+    }
+  };
+
+  window.enviarDecisaoGrupo = function() {
+    const g = appState.grupoAtivo;
+    const c = appState.crises[g];
+    if (!g || !c || !c.opts1) return;
+
+    const opt1Idx = parseInt(document.querySelector('input[name="opt_q1"]:checked')?.value || 0);
+    const opt2Idx = parseInt(document.querySelector('input[name="opt_q2"]:checked')?.value || 0);
+    const pitchText = document.getElementById('decisao-justificativa-pitch').value.trim();
+
+    const opt1 = c.opts1[opt1Idx];
+    const opt2 = c.opts2[opt2Idx];
+
+    const ptsFund = Math.round((opt1.ptsFund + opt2.ptsFund) / 2);
+    const ptsViab = Math.round((opt1.ptsViab + opt2.ptsViab) / 2);
+    const cLista = (appState.consultas && appState.consultas[g]) || [];
+    const ptsSaldo = Math.max(0, Math.round((100 - (cLista.length * 5)) / 10));
+
+    if (!appState.decisoes) appState.decisoes = {};
+    appState.decisoes[g] = {
+      q1Texto: opt1.texto,
+      q2Texto: opt2.texto,
+      pitchText,
+      ptsFund,
+      ptsViab,
+      ptsSaldo,
+      totalAuto: ptsFund + ptsViab + ptsSaldo,
+      hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})
+    };
+
+    if (!appState.pontuacoes) appState.pontuacoes = {};
+    appState.pontuacoes[g] = {
+      fund: ptsFund,
+      viab: ptsViab,
+      saldo: ptsSaldo,
+      pitch: appState.pontuacoes[g]?.pitch || 15,
+      total: ptsFund + ptsViab + ptsSaldo + (appState.pontuacoes[g]?.pitch || 15)
+    };
+
+    guardarEstado();
+    alert("Decisão submetida e avaliada automaticamente!");
+  };
+
+  function renderAlertaConsultoriasMestre() {
+    const boxAlerta = document.getElementById('alerta-consultoria-mestre');
+    const listaAlertas = document.getElementById('lista-alertas-consultoria');
+    const btnTravaNotif = document.getElementById('btn-toggle-trava-notif');
+    if (!boxAlerta || !listaAlertas || !btnTravaNotif) return;
+
+    // Atualiza o visual do botão de trava na notificação
+    if (appState.travaConsultoria) {
+      btnTravaNotif.innerHTML = "🔒 Trava Ativada (Clique para Destravar)";
+      btnTravaNotif.style.background = "var(--danger)";
+    } else {
+      btnTravaNotif.innerHTML = "🔓 Trava Desativada (Clique para Travar)";
+      btnTravaNotif.style.background = "var(--success)";
+    }
+
+    let htmlAlertas = '';
+    let totalConsultasPendentes = 0;
+
+    appState.grupos.forEach(g => {
+      const cLista = (appState.consultas && appState.consultas[g]) || [];
+      if (cLista.length > 0) {
+        cLista.forEach(item => {
+          totalConsultasPendentes++;
+          htmlAlertas += `<div style="margin-bottom:4px;"><strong>${g}</strong> solicitou ajuda de <strong>${item.esp}</strong> às <em>${item.hora}</em></div>`;
+        });
+      }
+    });
+
+    if (totalConsultasPendentes > 0) {
+      listaAlertas.innerHTML = htmlAlertas;
+      boxAlerta.style.display = 'block';
+    } else {
+      boxAlerta.style.display = 'none';
+    }
+  }
+
+  function renderMestreDecisoes() {
+    const container = document.getElementById('container-mestre-decisoes-detalhadas');
+    if (!container) return;
+    let html = '';
+    appState.grupos.forEach(g => {
+      const d = appState.decisoes && appState.decisoes[g];
+      if (d) {
+        html += `<div style="background:#fff; border:1px solid #e2e8f0; padding:10px; margin-bottom:10px; border-radius:6px; font-size:0.85rem;">
+          <div style="display:flex; justify-content:space-between;">
+            <strong style="color:var(--brand);">${g}</strong> <span class="badge badge-success">Avaliado Auto: ${d.totalAuto} pts</span>
+          </div>
+          <strong>1. Decisão:</strong> ${d.q1Texto}<br>
+          <strong>2. Estrutura:</strong> ${d.q2Texto}<br>
+          <strong>Resumo do Pitch:</strong> ${d.pitchText || 'Sem síntese.'}
+        </div>`;
+      } else {
+        html += `<div style="padding:8px; border:1px dashed #cbd5e1; margin-bottom:6px; font-size:0.80rem; color:var(--text-secondary);">${g}: Pendente...</div>`;
+      }
+    });
+    container.innerHTML = html;
+  }
+
+  window.enviarMensagemMestre = function() {
+    const dest = document.getElementById('select-destinatario-msg').value;
+    const txt = document.getElementById('texto-msg').value.trim();
+    if (!txt) return;
+    if (!appState.mensagens) appState.mensagens = [];
+    appState.mensagens.push({ dest, texto: txt, hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) });
+    guardarEstado();
+    document.getElementById('texto-msg').value = '';
+    renderGerenciarMensagensMestre();
+    alert("Comunicado enviado!");
+  };
+
+  function renderGerenciarMensagensMestre() {
+    const container = document.getElementById('container-gerenciar-mensagens-mestre');
+    if (!container) return;
+    if (!appState.mensagens || appState.mensagens.length === 0) {
+      container.innerHTML = '<p class="subtitle">Nenhum comunicado enviado.</p>';
+      return;
+    }
+    let html = '';
+    appState.mensagens.forEach((m, idx) => {
+      const destTag = m.dest === 'TODOS' ? '<span class="badge badge-warning">Geral</span>' : `<span class="badge badge-success">${m.dest}</span>`;
+      html += `<div style="background:#fff; border:1px solid #e2e8f0; padding:8px 12px; margin-bottom:6px; border-radius:6px; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+        <div style="font-size:0.85rem; overflow:hidden;">
+          ${destTag} <small style="color:var(--text-secondary);">(${m.hora})</small><br>
+          <span>${m.texto}</span>
+        </div>
+        <button class="btn-danger" onclick="excluirMensagem(${idx})">Excluir</button>
+      </div>`;
+    });
+    container.innerHTML = html;
+  }
+
+  function renderOrientacoes() {
+    const g = appState.grupoAtivo;
+    const container = document.getElementById('container-orientacoes-tempo-real');
+    if (!container) return;
+    const msgs = (appState.mensagens || []).filter(m => m.dest === 'TODOS' || m.dest === g);
+    container.innerHTML = msgs.length ? msgs.map(m => `
+      <div style="background:#eff6ff; padding:8px 12px; border-left:4px solid var(--brand); margin-bottom:6px; border-radius:4px; font-size:0.85rem;">
+        <small style="color:var(--brand); font-weight:700;">${m.dest === 'TODOS' ? '📢 Aviso Geral' : '🔒 Exclusivo'}</small> <small style="float:right; color:var(--text-secondary);">${m.hora}</small><br>
+        <span>${m.texto}</span>
+      </div>
+    `).join('') : '<p class="subtitle">Nenhum comunicado ativo.</p>';
+  }
+
+  // TIMERS
+  let timerMaster, masterTime = 600;
+  window.setMasterTimerStage = function() {
+    masterTime = parseInt(document.getElementById('stage-timer-select').value);
+    window.pauseMasterTimer(); updateTimerDisplay();
+  };
+  function updateTimerDisplay() {
+    const m = Math.floor(masterTime / 60), s = masterTime % 60;
+    document.getElementById('display-master-timer').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+  }
+  window.startMasterTimer = function() {
+    if (!timerMaster) {
+      timerMaster = setInterval(() => {
+        if (masterTime > 0) { masterTime--; updateTimerDisplay(); }
+        else { clearInterval(timerMaster); timerMaster = null; }
+      }, 1000);
+    }
+  };
+  window.pauseMasterTimer = function() { clearInterval(timerMaster); timerMaster = null; };
+  window.resetMasterTimer = function() { window.pauseMasterTimer(); window.setMasterTimerStage(); };
+
+  // RANKING
+  window.carregarPontuacaoGrupo = function() {
+    const g = document.getElementById('select-grupo-eval').value;
+    const p = (appState.pontuacoes && appState.pontuacoes[g]) || { fund: 0, viab: 0, pitch: 15, saldo: 10, total: 25 };
+    document.getElementById('pilar-pitch').value = p.pitch;
+    window.calcMediaRanking();
+  };
+
+  window.calcMediaRanking = function() {
+    const g = document.getElementById('select-grupo-eval').value;
+    const p = (appState.pontuacoes && appState.pontuacoes[g]) || { fund: 0, viab: 0, saldo: 10 };
+    const pitch = parseFloat(document.getElementById('pilar-pitch').value) || 0;
+    const total = p.fund + p.viab + p.saldo + pitch;
+    document.getElementById('display-nota-final').innerText = total;
+    return { pitch, total };
+  };
+
+  window.salvarPontuacaoGrupo = function() {
+    const g = document.getElementById('select-grupo-eval').value;
+    const res = window.calcMediaRanking();
+    if (!appState.pontuacoes) appState.pontuacoes = {};
+    const atual = appState.pontuacoes[g] || { fund: 0, viab: 0, saldo: 10 };
+    appState.pontuacoes[g] = { ...atual, pitch: res.pitch, total: res.total };
+    guardarEstado();
+    renderRanking();
+    alert(`Nota ajustada para ${g}! Total: ${res.total} pts`);
+  };
+
+  function renderRanking() {
+    const tbody = document.getElementById('tbody-ranking');
+    if (!tbody) return;
+    let lista = appState.grupos.map(g => {
+      const p = (appState.pontuacoes && appState.pontuacoes[g]) || { fund: 0, viab: 0, pitch: 0, saldo: 0, total: 0 };
+      return { grupo: g, auto: p.fund + p.viab + p.saldo, pitch: p.pitch, total: p.total };
+    });
+    lista.sort((a,b) => b.total - a.total);
+    tbody.innerHTML = lista.map((item, idx) => `<tr><td>${idx+1}º</td><td>${item.grupo}</td><td>${item.auto} pts</td><td>${item.pitch} pts</td><td><strong style="color:var(--brand);">${item.total} pts</strong></td></tr>`).join('');
+  }
+
+  if (window.firebasePronto) window.iniciarAplicacao();
+</script>
+</body>
+</html>
